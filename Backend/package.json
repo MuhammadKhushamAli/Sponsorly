@@ -1,0 +1,19 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "A platform where sponsers and collaborators can interact adn communicate each other",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MuhammadKhushamAli/Sponsorly.git"
+  },
+  "author": "Muhammad Khusham Ali, Muhammad Ubaidullah Naeem, Shaiq Raza, Muhammad Zahid, Muhammad Ahmad Hassan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MuhammadKhushamAli/Sponsorly/issues"
+  },
+  "homepage": "https://github.com/MuhammadKhushamAli/Sponsorly#readme"
+}
