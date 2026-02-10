@@ -18,6 +18,7 @@
   "homepage": "https://github.com/MuhammadKhushamAli/Sponsorly#readme",
   "dependencies": {
     "express": "^5.2.1",
+    "mongoose": "^9.2.0",
     "nodemon": "^3.1.11",
     "prettier": "^3.8.1"
   }
