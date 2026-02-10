@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/MuhammadKhushamAli/Sponsorly/issues"
   },
-  "homepage": "https://github.com/MuhammadKhushamAli/Sponsorly#readme"
+  "homepage": "https://github.com/MuhammadKhushamAli/Sponsorly#readme",
+  "dependencies": {
+    "nodemon": "^3.1.11"
+  }
 }
