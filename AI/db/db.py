@@ -1,7 +1,5 @@
-from dotenv import load_dotenv
 from pymongo import AsyncMongoClient, database
 import pymongo
-import os
 
 
 class MongoDBManager:
