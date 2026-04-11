@@ -22,5 +22,5 @@ async def connect_db() -> AsyncMongoClient:
         )
         return mongo_db_client
     except Exception as e:
-        raise Exception("Unable to Connect to Mongo DB")
+        raise Exception(f"Unable to Connect to Mongo DB: {e}")
     
