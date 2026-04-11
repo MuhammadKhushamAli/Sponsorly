@@ -1,4 +1,4 @@
-from agents import Agent, Runner, function_tool, RunContextWrapper
+from agents import Agent, Runner, RunContextWrapper
 from dotenv import load_dotenv
 from user_data.user_data import UserData
 load_dotenv()
@@ -7,6 +7,7 @@ load_dotenv()
 prev_history_id: str = None
 
 def instruction_generator(wrapper: RunContextWrapper[UserData], agent: Agent) -> str:
+    """Generates instructions for the agent based on the user data context."""
     context: UserData = wrapper.context
     return f"You are a helpful assistant. Your name is {agent.name} The user is {context.name} from {context.location}. His role is {context.role}. They have the following tags: {', '.join(context.tags)}. Answer the user's question based on this information."
 
