@@ -4,7 +4,8 @@
   "description": "A platform where sponsers and collaborators can interact adn communicate each other",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node src/index.js"
   },
   "repository": {
     "type": "git",
@@ -15,13 +16,5 @@
   "bugs": {
     "url": "https://github.com/MuhammadKhushamAli/Sponsorly/issues"
   },
-  "homepage": "https://github.com/MuhammadKhushamAli/Sponsorly#readme",
-  "dependencies": {
-    "cookie-parser": "^1.4.7",
-    "cors": "^2.8.6",
-    "express": "^5.2.1",
-    "mongoose": "^9.2.0",
-    "nodemon": "^3.1.11",
-    "prettier": "^3.8.1"
-  }
+  "homepage": "https://github.com/MuhammadKhushamAli/Sponsorly#readme"
 }
