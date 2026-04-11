@@ -19,15 +19,14 @@ async def agent_caller(user_input: str, context: UserData, prev_response_id: str
         model="gpt-3.5-turbo"
     )
 
-    while True:
-        response = await Runner.run(
-            starting_agent=chat_agent,
-            input=user_input,
-            previous_response_id=prev_response_id,
-            context=context
-        )
+    response = await Runner.run(
+        starting_agent=chat_agent,
+        input=user_input,
+        previous_response_id=prev_response_id,
+        context=context
+    )
 
-        return {
-            "response": response.final_output,
-            "history_id": response.last_response_id
-        }
+    return {
+        "response": response.final_output,
+        "history_id": response.last_response_id
+    }
