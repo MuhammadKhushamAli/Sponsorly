@@ -1,0 +1,28 @@
+import mongoose from "mongoose";
+
+const sponserSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "User reference is required"],
+    },
+    previousProjects: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Project",
+      },
+    ],
+    ratings: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Review",
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
+
+export const Sponser = mongoose.model("Sponser", sponserSchema);
