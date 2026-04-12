@@ -15,7 +15,7 @@ def root():
         "response": "server is running"
     }
 
-@app.get("/chat_bot_interaction")
+@app.put("/chat_bot_interaction")
 async def interacting_with_agent(
     prev_history_id: str | None = Query(None, description="The Previous history id user must have to start the conversation with agent form previous context"),
     message: ChatBotMessage = Body(..., description="The user query for the chat bot to start the conversation"),
