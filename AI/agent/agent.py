@@ -2,6 +2,7 @@ from agents import Agent, Runner, RunContextWrapper
 from dotenv import load_dotenv
 from user_data.user_data import UserData
 from typing import Dict
+from .agent_tools import creators_compaigns_finder, sponsors_compaigns_finder
 load_dotenv()
 
 def instruction_generator(wrapper: RunContextWrapper[UserData], agent: Agent) -> str:
@@ -16,7 +17,11 @@ async def agent_caller(user_input: str, context: UserData, prev_response_id: str
     chat_agent = Agent(
         name="ChatAgent",
         instructions=instruction_generator,
-        model="gpt-3.5-turbo"
+        model="gpt-3.5-turbo",
+        tools=[
+            creators_compaigns_finder,
+            sponsors_compaigns_finder
+        ]
     )
 
     response = await Runner.run(
