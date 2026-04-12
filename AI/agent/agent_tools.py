@@ -21,7 +21,7 @@ async def creators_compaigns_finder(tags: List[str]):
                 "from": "creators",
                 "localField": "creatorId",
                 "foreignField": "_id",
-                "as": "creator_Detail",
+                "as": "creator_detail",
                 "pipeline": [
                     {
                         "$lookup": {
@@ -85,8 +85,8 @@ async def creators_compaigns_finder(tags: List[str]):
         },
         {
             "$addFields": {
-                "creator_Detail": {
-                    "$first": "$creator_Detail"
+                "creator_detail": {
+                    "$first": "$creator_detail"
                 }
             }
         },
