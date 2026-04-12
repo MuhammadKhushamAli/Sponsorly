@@ -3,7 +3,6 @@ from typing import Literal, List
 
 @dataclass
 class UserData:
-    _id: str
     name: str
     email: str
     location: str
