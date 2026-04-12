@@ -5,7 +5,7 @@ import uvicorn
 from asyncio import run
 from db.db import mongo_db_manager
 
-PORT: str = os.getenv("PORT")
+PORT: int = int(os.getenv("PORT"))
 MONGO_URI: str = os.getenv("MONGO_DB_URI")
 DB_NAME: str = os.getenv("DB_NAME")
 
