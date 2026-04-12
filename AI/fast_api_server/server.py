@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Query, Body
 from .pydantic_model.chat_bot_message_model import ChatBotMessage
 from .pydantic_model.user_context_model import UserContext
-from ..agent.agent import agent_caller
+from agent.agent import agent_caller
 from typing import Dict
 
 app: FastAPI = FastAPI()

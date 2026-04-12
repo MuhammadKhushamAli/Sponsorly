@@ -3,7 +3,7 @@ import os
 from .server import app
 import uvicorn
 from asyncio import run
-from ..db.db import mongo_db_manager
+from db.db import mongo_db_manager
 
 PORT: int = os.getenv("PORT")
 MONGO_URI: str = os.getenv("MONGO_DB_URI")
