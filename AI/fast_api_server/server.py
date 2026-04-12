@@ -8,7 +8,7 @@ app: FastAPI = FastAPI()
 
 
 @app.get("/")
-def seting_context_to_chat_bot():
+def root():
 
     return {
         "status": 200,
