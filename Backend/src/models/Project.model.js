@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 
 const projectSchema = new mongoose.Schema(
   {
-    sponser: {
+    sponsor: {
       type: String,
-      required: [true, "Sponser is required"],
+      required: [true, "Sponsor is required"],
       trim: true,
     },
     payment: {

@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
 
-const sponserCollabRequestSchema = new mongoose.Schema(
+const sponsorCollabRequestSchema = new mongoose.Schema(
   {
-    sponserCampaignId: {
+    sponsorCampaignId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "SponserCampaign",
-      required: [true, "Sponser Campaign ID is required"],
+      ref: "SponsorCampaign",
+      required: [true, "Sponsor Campaign ID is required"],
     },
     creatorId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -27,4 +27,4 @@ const sponserCollabRequestSchema = new mongoose.Schema(
   }
 );
 
-export const SponserCollabRequest = mongoose.model("SponserCollabRequest", sponserCollabRequestSchema);
+export const SponsorCollabRequest = mongoose.model("SponsorCollabRequest", sponsorCollabRequestSchema);

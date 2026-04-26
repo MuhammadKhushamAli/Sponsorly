@@ -7,10 +7,10 @@ const sponsorshipRequestSchema = new mongoose.Schema(
       ref: "CreatorCampaign",
       required: [true, "Creator Campaign ID is required"],
     },
-    sponserId: {
+    sponsorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Sponser",
-      required: [true, "Sponser ID is required"],
+      ref: "Sponsor",
+      required: [true, "Sponsor ID is required"],
     },
     status: {
       type: String,

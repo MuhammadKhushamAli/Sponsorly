@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const sponserCampaignSchema = new mongoose.Schema(
+const sponsorCampaignSchema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -11,10 +11,10 @@ const sponserCampaignSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Budget is required"],
     },
-    sponserId: {
+    sponsorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Sponser",
-      required: [true, "Sponser ID is required"],
+      ref: "Sponsor",
+      required: [true, "Sponsor ID is required"],
     },
     tags: [
       {
@@ -32,4 +32,4 @@ const sponserCampaignSchema = new mongoose.Schema(
   }
 );
 
-export const SponserCampaign = mongoose.model("SponserCampaign", sponserCampaignSchema);
+export const SponsorCampaign = mongoose.model("SponsorCampaign", sponsorCampaignSchema);

@@ -1,1 +1,1 @@
-export const dbName = "sponserly"
+export const dbName = "sponsorly"

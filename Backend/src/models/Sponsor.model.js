@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const sponserSchema = new mongoose.Schema(
+const sponsorSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -25,4 +25,4 @@ const sponserSchema = new mongoose.Schema(
   }
 );
 
-export const Sponser = mongoose.model("Sponser", sponserSchema);
+export const Sponsor = mongoose.model("Sponsor", sponsorSchema);
