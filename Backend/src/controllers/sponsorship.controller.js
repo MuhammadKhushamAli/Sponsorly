@@ -9,7 +9,6 @@ export const getSponsorsByIndustries = async (req, res) => {
     // 1. Convert string → array
     // "tech,finance" → ["tech", "finance"]
     industries = industries.split(",").map(i => i.trim().toLowerCase());
-    console.log("Industries to search:", industries);
 
     // 2. Find sponsors matching ANY of these industries
     const sponsors = await Sponsor.find({
