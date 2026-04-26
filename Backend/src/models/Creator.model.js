@@ -18,12 +18,7 @@ const creatorSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "Review",
       },
-    ],
-    experienceInYears: [
-      {
-        type: Number,
-      },
-    ],
+    ]
   },
   {
     timestamps: true,

@@ -1,6 +1,8 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User.model.js";
+import { Creator } from "../models/Creator.model.js";
+import { Sponsor } from "../models/Sponsor.model.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/token.utils.js";
 
 // Signup
@@ -33,6 +35,21 @@ export const signupUser = async (req, res) => {
       password: hashedPassword,
       role,
     });
+
+    //role based sponsor or creator creation
+    if (role === "creator") {
+      await Creator.create({
+        user: user._id,
+        previousProjects: [],
+        ratings: [],
+      });
+    } else if (role === "sponsor") {
+      await Sponsor.create({
+        user: user._id,
+        previousProjects: [],
+        ratings: [],
+      });
+    }
 
     // 5. Generate tokens
     const accessToken = generateAccessToken(user);
