@@ -56,3 +56,62 @@ export const signupUser = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+//login
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // 1. Validation
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    // 2. Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Your email or password is incorrect" });
+    }
+
+    // 3. Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Your email or password is incorrect" });
+    }
+
+    // 4. Generate tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // 5. Save refresh token in DB
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    // 6. Set cookies
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: false, // true in production (HTTPS)
+      sameSite: "lax",
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+    });
+
+    // 7. Response
+    res.status(200).json({
+      message: "Login successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
