@@ -19,6 +19,7 @@ const sponsorSchema = new mongoose.Schema(
         ref: "Review",
       },
     ],
+    industries: [{ type: String }],
   },
   {
     timestamps: true,

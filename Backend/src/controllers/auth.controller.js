@@ -8,7 +8,7 @@ import { generateAccessToken, generateRefreshToken } from "../utils/token.utils.
 // Signup
 export const signupUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, niche, industries } = req.body;
 
     // 1. Validation
     if (!name || !email || !password || !role) {
@@ -17,6 +17,17 @@ export const signupUser = async (req, res) => {
 
     if (!["creator", "sponsor"].includes(role)) {
       return res.status(400).json({ message: "Invalid role" });
+    }
+
+    if (role === "creator") {
+        if (!Array.isArray(niche) || niche.length === 0) {
+            return res.status(400).json({ message: "At least one niche is required" });
+        }
+    }
+    if (role === "sponsor") {
+        if (!Array.isArray(industries) || industries.length === 0) {
+            return res.status(400).json({ message: "At least one industry is required" });
+        }
     }
 
     // 2. Check existing user
@@ -42,12 +53,14 @@ export const signupUser = async (req, res) => {
         user: user._id,
         previousProjects: [],
         ratings: [],
+        niche: niche,
       });
     } else if (role === "sponsor") {
       await Sponsor.create({
         user: user._id,
         previousProjects: [],
         ratings: [],
+        industries: industries,
       });
     }
 

@@ -18,7 +18,8 @@ const creatorSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "Review",
       },
-    ]
+    ],
+    niche: [{ type: String }],
   },
   {
     timestamps: true,
