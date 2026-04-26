@@ -104,14 +104,14 @@ export const loginUser = async (req, res) => {
     await user.save();
 
     // 6. Set cookies
-    res.cookie("accessToken", newAccessToken, {
+    res.cookie("accessToken", accessToken, {
         httpOnly: true,
         secure: false, // true in production
         sameSite: "lax",
         maxAge: 15 * 60 * 1000,
       });
 
-      res.cookie("refreshToken", newRefreshToken, {
+      res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: false,
         sameSite: "lax",
