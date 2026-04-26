@@ -6,11 +6,13 @@ dotenv.config();
 
 //rout files
 import authRoutes from "./routes/auth.routes.js";
-import sponsorshipRoutes from "./routes/sponsorship.routes.js";
+import sponsorshipRoutes from "./routes/sponsors.routes.js";
+import creatorRoutes from "./routes/creators.routes.js";
 
 //routes
 app.use("/auth", authRoutes);
-app.use("/sponsorship", sponsorshipRoutes);
+app.use("/sponsors", sponsorshipRoutes);
+app.use("/creators", creatorRoutes);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Sponsorly API");
