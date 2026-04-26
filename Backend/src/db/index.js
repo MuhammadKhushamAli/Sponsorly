@@ -1,11 +1,13 @@
 import mongoose from "mongoose";
-import { dbName } from "../constants.js";
+import dotenv from "dotenv";
 
-export const connectDB = async () => {
-  try {
-    await mongoose.connect(`${process.env.MONGO_DB_URI}/${dbName}`);
-    console.log("Database Connected Successfully");
-  } catch (error) {
-    throw `Uanble to connect database: ${error}`;
-  }
-};
+dotenv.config();
+
+
+mongoose.connect(`${process.env.DB_URI}/Sponsorly`)
+.then(()=>{
+    console.log("dataBase connected Successfully");
+})
+.catch((err)=>{
+    console.log("dataBase connection failed: ", err.message);
+})
