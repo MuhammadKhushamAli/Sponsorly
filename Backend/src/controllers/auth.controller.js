@@ -104,17 +104,19 @@ export const loginUser = async (req, res) => {
     await user.save();
 
     // 6. Set cookies
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: false, // true in production (HTTPS)
-      sameSite: "lax",
-    });
+    res.cookie("accessToken", newAccessToken, {
+        httpOnly: true,
+        secure: false, // true in production
+        sameSite: "lax",
+        maxAge: 15 * 60 * 1000,
+      });
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-    });
+      res.cookie("refreshToken", newRefreshToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
 
     // 7. Response
     res.status(200).json({
@@ -135,7 +137,7 @@ export const loginUser = async (req, res) => {
 //logout
 export const logoutUser = async (req, res) => {
   try {
-    const userId = req.user?.id; // assuming you use auth middleware
+    const userId = req.user?.id; //using auth middleware to get user info from token
 
     // 1. Remove refresh token from DB (important)
     if (userId) {
@@ -164,6 +166,68 @@ export const logoutUser = async (req, res) => {
 
   } catch (error) {
     res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+//refresh token
+export const refreshAccessToken = async (req, res) => {
+  try {
+    const refreshToken = req.cookies?.refreshToken;
+
+    // 1. Check token exists
+    if (!refreshToken) {
+      return res.status(401).json({ message: "No refresh token" });
+    }
+
+    // 2. Find user with this token (DB check)
+    const user = await User.findOne({ refreshToken });
+    if (!user) {
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+
+    // 3. Verify refresh token
+    jwt.verify(refreshToken, process.env.REFRESH_SECRET, async (err, decoded) => {
+      if (err) {
+        return res.status(403).json({ message: "Token expired or invalid" });
+      }
+
+      // extra safety (match user id)
+      if (user._id.toString() !== decoded.id) {
+        return res.status(403).json({ message: "Token mismatch" });
+      }
+
+      // 4. Generate NEW tokens (ROTATION)
+      const newAccessToken = generateAccessToken(user);
+      const newRefreshToken = generateRefreshToken(user);
+
+      // 5. Replace refresh token in DB
+      user.refreshToken = newRefreshToken;
+      await user.save();
+
+      // 6. Set new cookies
+      res.cookie("accessToken", newAccessToken, {
+        httpOnly: true,
+        secure: false, // true in production
+        sameSite: "lax",
+        maxAge: 15 * 60 * 1000,
+      });
+
+      res.cookie("refreshToken", newRefreshToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      // 7. Response
+      return res.status(200).json({ message: "Token refreshed" });
+    });
+
+  } catch (error) {
+    return res.status(500).json({
       message: "Server error",
       error: error.message,
     });
