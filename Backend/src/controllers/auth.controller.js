@@ -131,3 +131,41 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+//logout
+export const logoutUser = async (req, res) => {
+  try {
+    const userId = req.user?.id; // assuming you use auth middleware
+
+    // 1. Remove refresh token from DB (important)
+    if (userId) {
+      await User.findByIdAndUpdate(userId, {
+        $unset: { refreshToken: 1 },
+      });
+    }
+
+    // 2. Clear cookies
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+    });
+
+    // 3. Response
+    res.status(200).json({
+      message: "Logged out successfully",
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
