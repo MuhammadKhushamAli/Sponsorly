@@ -28,3 +28,38 @@ export const getCreatorsByNiche = async (req, res) => {
     });
   }
 };
+
+export const creatorDashboard = async (req, res) => {
+  try {
+    // 1. Get user
+    const user = await User.findById(req.user.id).select("name email role");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // 2. Get creator profile
+    const creator = await Creator.findOne({ user: req.user.id });
+
+    if (!creator) {
+      return res.status(404).json({ message: "Creator profile not found" });
+    }
+
+    // 3. Merge into single object
+    const mergedUser = {
+      ...user.toObject(),
+      creator: creator.toObject(),
+    };
+
+    res.json({
+      message: "Welcome to creator dashboard",
+      user: mergedUser,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
