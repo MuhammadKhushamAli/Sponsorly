@@ -25,16 +25,21 @@ const creatorSchema = new mongoose.Schema(
           type: Number,
           min: 1,
           max: 5,
-          required: true,
         },
       },
     ],
 
-    niche: [{ type: String }],
+    niche: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
 
     bio: {
       type: String,
       trim: true,
+      default: "",
     },
 
     links: {
@@ -42,29 +47,26 @@ const creatorSchema = new mongoose.Schema(
         {
           platform: {
             type: String,
-            required: true,
             trim: true,
           },
           url: {
             type: String,
-            required: true,
             trim: true,
           },
         },
       ],
-      validate: {
-        validator: function (value) {
-          return value.length > 0;
-        },
-        message: "At least one social platform link is required",
-      },
-      required: true,
+      default: [],
     },
 
     followersCount: {
       type: Number,
-      required: [true, "Followers count is required"],
+      default: 0,
       min: 0,
+    },
+
+    profileCompleted: {
+      type: Boolean,
+      default: false,
     },
   },
   {
