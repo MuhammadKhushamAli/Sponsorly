@@ -17,16 +17,9 @@ const creatorSchema = new mongoose.Schema(
 
     ratings: [
       {
-        review: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Review",
-        },
-        rating: {
-          type: Number,
-          min: 1,
-          max: 5,
-        },
-      },
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Review",
+      }
     ],
 
     niche: [
