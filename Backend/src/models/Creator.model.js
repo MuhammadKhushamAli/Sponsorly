@@ -7,7 +7,12 @@ const creatorSchema = new mongoose.Schema(
       ref: "User",
       required: [true, "User reference is required"],
     },
-
+    campaigns: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "CreatorCampaign",
+      },
+    ],
     previousProjects: [
       {
         type: mongoose.Schema.Types.ObjectId,
