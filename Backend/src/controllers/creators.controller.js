@@ -66,7 +66,7 @@ export const creatorDashboard = async (req, res) => {
   }
 };
 
-export const completeCreatorProfile = async (req, res) => {
+export const updateCreatorProfile = async (req, res) => {
   try {
     const userId = req.user.id;
 
