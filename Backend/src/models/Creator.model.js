@@ -13,6 +13,14 @@ const creatorSchema = new mongoose.Schema(
         ref: "CreatorCampaign",
       },
     ],
+    profilePicture_url: {
+      type: String,
+      trim: true,
+    },
+    profilePicture_id: {
+      type: String,
+      trim: true,
+    },
     previousProjects: [
       {
         type: mongoose.Schema.Types.ObjectId,
