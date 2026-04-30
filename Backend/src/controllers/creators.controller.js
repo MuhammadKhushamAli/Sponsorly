@@ -2,6 +2,7 @@ import { User } from "../models/User.model.js";
 import { Creator } from "../models/Creator.model.js";
 import { Sponsor } from "../models/Sponsor.model.js";
 import { imageUpload } from "../utils/uploadHandlers.utils.js";
+import fs from "fs/promises";
 
 export const getCreatorsByNiche = async (req, res) => {
   try {
@@ -66,23 +67,18 @@ export const creatorDashboard = async (req, res) => {
 };
 
 export const completeCreatorProfile = async (req, res) => {
+    const file = req.file ? req.file : null;
   try {
-    
-    if(req.user.profileCompleted) {
-      return res.status(400).json({
-        message: "Profile already completed. Use update API instead.",
-      });
-    }
-
     const userId = req.user.id;
     const { bio, followersCount } = req.body;
-    const file = req.file;
 
-    // 🔥 Parse links safely (from form-data string → array)
+    // Parse links safely (from form-data string → array)
     let links;
     try {
       links = JSON.parse(req.body.links);
     } catch (err) {
+        if(file)
+        fs.unlink(file.path); // delete the uploaded file if validation fails  
       return res.status(400).json({
         message: "links must be a valid JSON array string",
         example: `[{"platform":"youtube","url":"https://youtube.com"}]`,
@@ -93,11 +89,15 @@ export const completeCreatorProfile = async (req, res) => {
     const creator = await Creator.findOne({ user: userId });
 
     if (!creator) {
+        if(file)
+        fs.unlink(file.path); // delete the uploaded file if validation fails  
       return res.status(404).json({ message: "Creator not found" });
     }
 
     // 2. Prevent re-completion
     if (creator.profileCompleted) {
+        if(file)
+        fs.unlink(file.path); // delete the uploaded file if validation fails  
       return res.status(400).json({
         message: "Profile already completed. Use update API instead.",
       });
@@ -121,6 +121,8 @@ export const completeCreatorProfile = async (req, res) => {
     }
 
     if (missingFields.length > 0) {
+      if(file)
+        fs.unlink(file.path); // delete the uploaded file if validation fails  
       return res.status(400).json({
         message: "All fields are required to complete profile",
         missingFields,
@@ -130,6 +132,8 @@ export const completeCreatorProfile = async (req, res) => {
     // 4. Validate links structure
     for (const link of links) {
       if (!link.platform || !link.url) {
+        if(file)
+            fs.unlink(file.path); // delete the uploaded file if validation fails   
         return res.status(400).json({
           message: "Each link must have platform and url",
         });
@@ -139,6 +143,8 @@ export const completeCreatorProfile = async (req, res) => {
     // 5. Validate followers count
     const parsedFollowers = Number(followersCount);
     if (isNaN(parsedFollowers) || parsedFollowers < 0) {
+      if(file)
+        fs.unlink(file.path); // delete the uploaded file if validation fails 
       return res.status(400).json({
         message: "followersCount must be a non-negative number",
       });
@@ -157,6 +163,7 @@ export const completeCreatorProfile = async (req, res) => {
     creator.profileCompleted = true;
 
     await creator.save();
+    fs.unlink(file.path); // delete the local file after upload
 
     // 8. Response
     res.status(200).json({
@@ -165,6 +172,8 @@ export const completeCreatorProfile = async (req, res) => {
     });
 
   } catch (error) {
+    if(file)
+        fs.unlink(file.path); // delete the uploaded file if validation fails 
     res.status(500).json({
       message: "Server error",
       error: error.message,
