@@ -16,10 +16,12 @@ const creatorSchema = new mongoose.Schema(
     profilePicture_url: {
       type: String,
       trim: true,
+      default: "",
     },
     profilePicture_id: {
       type: String,
       trim: true,
+      default: "",
     },
     previousProjects: [
       {
