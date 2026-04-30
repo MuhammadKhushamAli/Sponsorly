@@ -67,113 +67,125 @@ export const creatorDashboard = async (req, res) => {
 };
 
 export const completeCreatorProfile = async (req, res) => {
-    const file = req.file ? req.file : null;
   try {
     const userId = req.user.id;
-    const { bio, followersCount } = req.body;
 
-    // Parse links safely (from form-data string → array)
-    let links;
-    try {
-      links = JSON.parse(req.body.links);
-    } catch (err) {
-        if(file)
-        fs.unlink(file.path); // delete the uploaded file if validation fails  
-      return res.status(400).json({
-        message: "links must be a valid JSON array string",
-        example: `[{"platform":"youtube","url":"https://youtube.com"}]`,
-      });
-    }
+    const { bio, links, niche, followersCount } = req.body? req.body : {};
+    const file = req.file;
 
-    // 1. Find creator
     const creator = await Creator.findOne({ user: userId });
 
     if (!creator) {
-        if(file)
-        fs.unlink(file.path); // delete the uploaded file if validation fails  
+        if(file) 
+            await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
       return res.status(404).json({ message: "Creator not found" });
     }
 
-    // 2. Prevent re-completion
-    if (creator.profileCompleted) {
-        if(file)
-        fs.unlink(file.path); // delete the uploaded file if validation fails  
-      return res.status(400).json({
-        message: "Profile already completed. Use update API instead.",
-      });
+    let isChanged = false;
+
+    // ---------------- IMAGE ----------------
+    if (file) {
+      const uploadRes = await imageUpload(file.path);
+
+      creator.profilePicture_url = uploadRes.secure_url;
+      creator.profilePicture_id = uploadRes.public_id;
+
+      isChanged = true;
     }
 
-    // 3. VALIDATION
-    const missingFields = [];
+    // ---------------- BIO ----------------
+    if (bio !== undefined) {
+      if (bio.trim() === "") {
+        if(file) 
+            await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
+        return res.status(400).json({ message: "Bio cannot be empty" });
+      }
 
-    if (!file) missingFields.push("profilePicture");
-
-    if (!bio || bio.trim() === "") {
-      missingFields.push("bio");
+      creator.bio = bio;
+      isChanged = true;
     }
 
-    if (!Array.isArray(links) || links.length === 0) {
-      missingFields.push("links");
+    // ---------------- NICHES ----------------
+    if (niche !== undefined) {
+      if (!Array.isArray(niche) || niche.length === 0) {
+        if(file) 
+            await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
+        return res.status(400).json({ message: "Niche cannot be empty" });
+      }
+
+      creator.niche = niche;
+      isChanged = true;
     }
 
-    if (followersCount === undefined) {
-      missingFields.push("followersCount");
-    }
+    // ---------------- LINKS ----------------
+    if (links !== undefined) {
+      let parsedLinks;
 
-    if (missingFields.length > 0) {
-      if(file)
-        fs.unlink(file.path); // delete the uploaded file if validation fails  
-      return res.status(400).json({
-        message: "All fields are required to complete profile",
-        missingFields,
-      });
-    }
-
-    // 4. Validate links structure
-    for (const link of links) {
-      if (!link.platform || !link.url) {
-        if(file)
-            fs.unlink(file.path); // delete the uploaded file if validation fails   
+      try {
+        parsedLinks = JSON.parse(links);
+      } catch {
+        if(file) 
+            await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
         return res.status(400).json({
-          message: "Each link must have platform and url",
+          message: "Links must be valid JSON array string",
         });
       }
+
+      if (!Array.isArray(parsedLinks) || parsedLinks.length === 0) {
+        if(file) 
+            await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
+        return res.status(400).json({ message: "Links cannot be empty" });
+      }
+
+      creator.links = parsedLinks;
+      isChanged = true;
     }
 
-    // 5. Validate followers count
-    const parsedFollowers = Number(followersCount);
-    if (isNaN(parsedFollowers) || parsedFollowers < 0) {
-      if(file)
-        fs.unlink(file.path); // delete the uploaded file if validation fails 
+    // ---------------- FOLLOWERS ----------------
+    if (followersCount !== undefined) {
+      const parsed = Number(followersCount);
+
+      if (isNaN(parsed) || parsed < 0) {
+        if(file) 
+            await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
+        return res.status(400).json({
+          message: "Invalid followers count",
+        });
+      }
+
+      creator.followersCount = parsed;
+      isChanged = true;
+    }
+
+    // ---------------- MUST CHANGE CHECK ----------------
+    if (!isChanged) {
+        if(file) 
+            await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
       return res.status(400).json({
-        message: "followersCount must be a non-negative number",
+        message: "At least one field must be updated",
       });
     }
 
-    // 6. Upload image
-    const uploadRes = await imageUpload(file.path);
-
-    // 7. Save everything
-    creator.profilePicture_url = uploadRes.secure_url;
-    creator.profilePicture_id = uploadRes.public_id;
-    creator.bio = bio;
-    creator.links = links;
-    creator.followersCount = parsedFollowers;
-
-    creator.profileCompleted = true;
+    // ---------------- PROFILE COMPLETION LOGIC ----------------
+    creator.profileCompleted =
+      !!creator.profilePicture_url &&
+      !!creator.bio &&
+      Array.isArray(creator.niche) &&
+      creator.niche.length > 0 &&
+      Array.isArray(creator.links) &&
+      creator.links.length > 0;
 
     await creator.save();
-    fs.unlink(file.path); // delete the local file after upload
+    if(file) 
+        await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
 
-    // 8. Response
     res.status(200).json({
-      message: "Profile completed successfully",
+      message: "Profile saved successfully",
+      profileCompleted: creator.profileCompleted,
       creator,
     });
 
   } catch (error) {
-    if(file)
-        fs.unlink(file.path); // delete the uploaded file if validation fails 
     res.status(500).json({
       message: "Server error",
       error: error.message,
