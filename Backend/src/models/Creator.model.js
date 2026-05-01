@@ -29,8 +29,11 @@ const creatorSchema = new mongoose.Schema(
         ref: "Project",
       },
     ],
-
-    ratings: [
+    rating: {
+      type: Number,
+      default: 0,
+    },
+    reviews: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Review",

@@ -4,20 +4,45 @@ import { Sponsor } from "../models/Sponsor.model.js";
 import { imageUpload } from "../utils/uploadHandlers.utils.js";
 import fs from "fs/promises";
 
-export const getCreatorsByNiche = async (req, res) => {
+export const getCreators = async (req, res) => {
   try {
-    let { niche } = req.params;
+    let { niche, minRating } = req.query;
 
-    // 1. Convert string → array
-    // "gaming,vlogging" → ["gaming", "vlogging"]
-    niche = niche.split(",").map(n => n.trim().toLowerCase());
+    const filter = {};
 
-    // 2. Find creators matching ANY of these niches
-    const creators = await Creator.find({
-      niche: { $in: niche },
-    }).populate("user", "name email role");
+    // 1. Handle niche (multiple allowed)
+    if (niche) {
+      const nicheArray = niche
+        .split(",")
+        .map(n => n.trim().toLowerCase());
 
-    // 3. Response
+      filter.niche = { $in: nicheArray };
+    }
+
+    // 2. Handle rating
+    if (minRating) {
+      const rating = parseFloat(minRating);
+
+      if (isNaN(rating)) {
+        return res.status(400).json({
+          message: "Invalid rating value",
+        });
+      }
+
+      filter.rating = { $gte: rating };
+    }
+
+    console.log(filter);
+
+    // 3. Optional: only completed profiles
+    filter.profileCompleted = true;
+
+    // 4. Query
+    const creators = await Creator.find(filter)
+      .populate("user", "name email role")
+      .sort({ rating: -1 }); // best first
+
+    // 5. Response
     res.status(200).json({
       count: creators.length,
       creators,
