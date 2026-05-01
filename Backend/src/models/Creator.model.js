@@ -30,8 +30,10 @@ const creatorSchema = new mongoose.Schema(
       },
     ],
     rating: {
-      type: Number,
+      type: mongoose.Types.Decimal128,
       default: 0,
+      min: 0,
+      max: 5,
     },
     reviews: [
       {
