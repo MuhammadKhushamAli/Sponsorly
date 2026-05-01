@@ -23,6 +23,16 @@ const creatorSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    portfolio_url: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    portfolio_id: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     previousProjects: [
       {
         type: mongoose.Schema.Types.ObjectId,
