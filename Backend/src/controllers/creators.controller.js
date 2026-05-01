@@ -3,49 +3,61 @@ import { Creator } from "../models/Creator.model.js";
 import { Sponsor } from "../models/Sponsor.model.js";
 import { imageUpload } from "../utils/uploadHandlers.utils.js";
 import fs from "fs/promises";
+import mongoose from "mongoose";
 
 export const getCreators = async (req, res) => {
   try {
-    let { niche, minRating } = req.query;
+    let { niche, rating } = req.query;
 
-    const filter = {};
-
-    // 1. Handle niche (multiple allowed)
+    const filter = {
+      profileCompleted: true,
+    };
+    
+    // 1. Niche filter
     if (niche) {
-      const nicheArray = niche
+        const nicheArray = niche
         .split(",")
         .map(n => n.trim().toLowerCase());
-
-      filter.niche = { $in: nicheArray };
+        
+        filter.niche = { $in: nicheArray };
     }
+    
+    // 2. Rating filter (Decimal128 handling)
+    if (rating<0 || rating>5) {
+      return res.status(400).json({
+        message: "Rating must be between 0 and 5",
+      });
+    }
+    if (rating) {
+        const minRating = parseFloat(rating);
 
-    // 2. Handle rating
-    if (minRating) {
-      const rating = parseFloat(minRating);
-
-      if (isNaN(rating)) {
+      if (isNaN(minRating)) {
         return res.status(400).json({
           message: "Invalid rating value",
         });
       }
 
-      filter.rating = { $gte: rating };
+      filter.rating = {
+        $gte: mongoose.Types.Decimal128.fromString(minRating.toString()),
+      };
     }
 
-    console.log(filter);
-
-    // 3. Optional: only completed profiles
-    filter.profileCompleted = true;
-
-    // 4. Query
+    // 3. Query
     const creators = await Creator.find(filter)
       .populate("user", "name email role")
-      .sort({ rating: -1 }); // best first
+      .sort({ rating: -1 });
+
+    // 4. Convert Decimal128 → Number (VERY IMPORTANT)
+    const formattedCreators = creators.map((creator) => {
+      const obj = creator.toObject();
+      obj.rating = obj.rating ? parseFloat(obj.rating.toString()) : 0;
+      return obj;
+    });
 
     // 5. Response
     res.status(200).json({
-      count: creators.length,
-      creators,
+      count: formattedCreators.length,
+      creators: formattedCreators,
     });
 
   } catch (error) {
