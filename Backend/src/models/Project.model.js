@@ -2,11 +2,6 @@ import mongoose from "mongoose";
 
 const projectSchema = new mongoose.Schema(
   {
-    sponsor: {
-      type: String,
-      required: [true, "Sponsor is required"],
-      trim: true,
-    },
     payment: {
       type: Number,
       required: [true, "Payment is required"],
@@ -14,11 +9,6 @@ const projectSchema = new mongoose.Schema(
     status: {
       type: String,
       required: [true, "Status is required"],
-      trim: true,
-    },
-    creator: {
-      type: String,
-      required: [true, "Creator is required"],
       trim: true,
     },
     chat: {
