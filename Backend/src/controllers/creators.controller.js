@@ -9,8 +9,22 @@ export const getCreators = async (req, res) => {
   try {
     let { niche, rating } = req.query;
 
-    const filter = {
+    const completedUsers = await User.find({
+      role: "creator",
       profileCompleted: true,
+    }).select("_id");
+
+    const completedUserIds = completedUsers.map((user) => user._id);
+
+    if (completedUserIds.length === 0) {
+      return res.status(200).json({
+        count: 0,
+        creators: [],
+      });
+    }
+
+    const filter = {
+      user: { $in: completedUserIds },
     };
     
     // 1. Niche filter
@@ -44,7 +58,7 @@ export const getCreators = async (req, res) => {
 
     // 3. Query
     const creators = await Creator.find(filter)
-      .populate("user", "name email role")
+      .populate("user", "name email role profileCompleted bio profilePicture_url profilePicture_id")
       .sort({ rating: -1 });
 
     // 4. Convert Decimal128 → Number (VERY IMPORTANT)
@@ -71,7 +85,7 @@ export const getCreators = async (req, res) => {
 export const creatorDashboard = async (req, res) => {
   try {
     // 1. Get user
-    const user = await User.findById(req.user.id).select("name email role");
+    const user = await User.findById(req.user.id).select("name email role profileCompleted bio profilePicture_url profilePicture_id");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -107,10 +121,17 @@ export const updateCreatorProfile = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const { bio, links, niche, followersCount } = req.body? req.body : {};
+    const { bio, links, niche, followersCount } = req.body ? req.body : {};
     const file = req.file;
 
+    const user = await User.findById(userId);
     const creator = await Creator.findOne({ user: userId });
+
+    if (!user) {
+      if (file) 
+        await fs.unlink(file.path);
+      return res.status(404).json({ message: "User not found" });
+    }
 
     if (!creator) {
         if(file) 
@@ -124,8 +145,8 @@ export const updateCreatorProfile = async (req, res) => {
     if (file) {
       const uploadRes = await imageUpload(file.path);
 
-      creator.profilePicture_url = uploadRes.secure_url;
-      creator.profilePicture_id = uploadRes.public_id;
+      user.profilePicture_url = uploadRes.secure_url;
+      user.profilePicture_id = uploadRes.public_id;
 
       isChanged = true;
     }
@@ -138,7 +159,7 @@ export const updateCreatorProfile = async (req, res) => {
         return res.status(400).json({ message: "Bio cannot be empty" });
       }
 
-      creator.bio = bio;
+      user.bio = bio;
       isChanged = true;
     }
 
@@ -204,21 +225,22 @@ export const updateCreatorProfile = async (req, res) => {
     }
 
     // ---------------- PROFILE COMPLETION LOGIC ----------------
-    creator.profileCompleted =
-      !!creator.profilePicture_url &&
-      !!creator.bio &&
+    user.profileCompleted =
+      !!user.profilePicture_url &&
+      !!user.bio &&
       Array.isArray(creator.niche) &&
       creator.niche.length > 0 &&
       Array.isArray(creator.links) &&
       creator.links.length > 0;
 
+    await user.save();
     await creator.save();
     if(file) 
         await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
 
     res.status(200).json({
       message: "Profile saved successfully",
-      profileCompleted: creator.profileCompleted,
+      profileCompleted: user.profileCompleted,
       creator,
     });
 

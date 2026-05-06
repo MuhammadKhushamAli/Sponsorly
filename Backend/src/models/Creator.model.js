@@ -13,16 +13,6 @@ const creatorSchema = new mongoose.Schema(
         ref: "CreatorCampaign",
       },
     ],
-    profilePicture_url: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-    profilePicture_id: {
-      type: String,
-      trim: true,
-      default: "",
-    },  
     previousProjects: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -49,12 +39,6 @@ const creatorSchema = new mongoose.Schema(
       },
     ],
 
-    bio: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-
     links: {
       type: [
         {
@@ -73,13 +57,7 @@ const creatorSchema = new mongoose.Schema(
 
     followersCount: {
       type: Number,
-      default: 0,
       min: 0,
-    },
-
-    profileCompleted: {
-      type: Boolean,
-      default: false,
     },
   },
   {
