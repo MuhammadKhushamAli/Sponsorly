@@ -153,24 +153,12 @@ export const updateCreatorProfile = async (req, res) => {
 
     // ---------------- BIO ----------------
     if (bio !== undefined) {
-      if (bio.trim() === "") {
-        if(file) 
-            await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
-        return res.status(400).json({ message: "Bio cannot be empty" });
-      }
-
       user.bio = bio;
       isChanged = true;
     }
 
     // ---------------- NICHES ----------------
     if (niche !== undefined) {
-      if (!Array.isArray(niche) || niche.length === 0) {
-        if(file) 
-            await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
-        return res.status(400).json({ message: "Niche cannot be empty" });
-      }
-
       creator.niche = niche;
       isChanged = true;
     }
@@ -227,7 +215,7 @@ export const updateCreatorProfile = async (req, res) => {
     // ---------------- PROFILE COMPLETION LOGIC ----------------
     user.profileCompleted =
       !!user.profilePicture_url &&
-      !!user.bio &&
+      !!user.bio
       Array.isArray(creator.niche) &&
       creator.niche.length > 0 &&
       Array.isArray(creator.links) &&

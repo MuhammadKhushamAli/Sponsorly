@@ -58,6 +58,7 @@ const creatorSchema = new mongoose.Schema(
     followersCount: {
       type: Number,
       min: 0,
+      default: 0,
     },
   },
   {
