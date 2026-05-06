@@ -229,6 +229,7 @@ export const updateCreatorProfile = async (req, res) => {
     res.status(200).json({
       message: "Profile saved successfully",
       profileCompleted: user.profileCompleted,
+      user,
       creator,
     });
 
