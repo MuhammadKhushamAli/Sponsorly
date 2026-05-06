@@ -15,7 +15,7 @@ async def agent_caller(user_input: str, context: UserData, prev_response_id: str
     """Calls the agent and returns the response and the history ID."""
 
     chat_agent = Agent(
-        name="ChatAgent",
+        name="Chatagsnt",
         instructions=instruction_generator,
         model="gpt-3.5-turbo",
         tools=[

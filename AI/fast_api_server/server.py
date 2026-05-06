@@ -29,7 +29,7 @@ async def interacting_with_agent(
             name=context.user_name,
             email=context.user_email,
             location=context.user_location,
-            tags=context.user_tage,
+            tags=context.user_tags,
             role=context.user_role
         ),
         prev_response_id=prev_history_id
