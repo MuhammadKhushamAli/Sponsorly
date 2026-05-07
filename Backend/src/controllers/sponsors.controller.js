@@ -35,7 +35,7 @@ export const getSponsorsByIndustries = async (req, res) => {
 export const sponsorDashboard = async (req, res) => {
   try {
     // 1. Get user
-    const user = await User.findById(req.user.id).select("name email role bio profilePicture_url profilePicture_id");
+    const user = await User.findById(req.user.id).select("name email role bio profilePicture_url profilePicture_id profileCompleted");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });

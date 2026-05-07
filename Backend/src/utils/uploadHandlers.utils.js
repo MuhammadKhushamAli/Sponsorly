@@ -2,11 +2,11 @@ import cloudinary from "../config/cloudinaryConfig.js";
 
 export async function imageUpload(filePath) {
     try{
-        const res = await cloudinary.uploader.upload(filePath, {
-          resource_type: "image",
-        });
 
-        return res;
+      const res = await cloudinary.uploader.upload(filePath, {
+        resource_type: "image",
+      });
+      return res;
     }
     catch(err){
       throw new Error(`Image upload failed: ${err.message}`);
