@@ -75,7 +75,7 @@ export const updateSponsorProfile = async (req, res) => {
 
     const userId = req.user.id;
 
-    const {  bio } = req.body ? req.body : {};
+    const {  bio, industries } = req.body ? req.body : {};
     const file = req.file;
 
     const user = await User.findById(userId);
@@ -117,13 +117,40 @@ export const updateSponsorProfile = async (req, res) => {
     // ---------------- BIO ----------------
     if (bio !== undefined) {
       if (typeof bio !== "string" || bio.trim() === "") {
-        if (file) {
-          await fs.unlink(file.path);
-        }
+        if (file) await fs.unlink(file.path);
         return res.status(400).json({ message: "Bio cannot be empty" });
       }
 
       user.bio = bio.trim();
+      isChanged = true;
+    }
+
+    // ---------------- INDUSTRIES ----------------
+    if (industries !== undefined) {
+      let parsedIndustries;
+
+      if (typeof industries === "string") {
+        try {
+          parsedIndustries = JSON.parse(industries);
+        } catch {
+          parsedIndustries = industries
+            .split(',')
+            .map(i => i.trim().toLowerCase())
+            .filter(Boolean);
+        }
+      } else if (Array.isArray(industries)) {
+        parsedIndustries = industries.map(i => String(i).trim().toLowerCase()).filter(Boolean);
+      } else {
+        if (file) await fs.unlink(file.path);
+        return res.status(400).json({ message: "Invalid industries format" });
+      }
+
+      if (!Array.isArray(parsedIndustries) || parsedIndustries.length === 0) {
+        if (file) await fs.unlink(file.path);
+        return res.status(400).json({ message: "At least one industry is required" });
+      }
+
+      sponsor.industries = parsedIndustries;
       isChanged = true;
     }
 
@@ -136,7 +163,7 @@ export const updateSponsorProfile = async (req, res) => {
     }
 
     // ---------------- PROFILE COMPLETION LOGIC (sponsor) ----------------
-    user.profileCompleted = !!user.profilePicture_url && !!user.bio;
+    user.profileCompleted = !!user.profilePicture_url && !!user.bio && Array.isArray(sponsor.industries) && sponsor.industries.length > 0 ;
 
     await user.save();
     await sponsor.save();
