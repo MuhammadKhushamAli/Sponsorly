@@ -28,7 +28,8 @@ const creatorCampaignSchema = new mongoose.Schema(
     },
     description: {
       type: String,
-      trim: true,
+      trim: true, 
+      required: [true, "Description is required"],
     },
   },
   {
