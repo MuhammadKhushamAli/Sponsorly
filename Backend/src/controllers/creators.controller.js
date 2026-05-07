@@ -310,3 +310,103 @@ export const createCampaign = async (req, res) => {
     });
   }
 };
+
+export const updateCampaign = async (req, res) => {
+  try {
+    if (req.user.role !== "creator") {
+      return res.status(403).json({
+        message: "Access denied: Only creators can update campaigns",
+      });
+    }
+
+    const { campaignId } = req.params;
+    const { title, ratePerHour, tags, description } = req.body ? req.body : {};
+
+    if (!mongoose.Types.ObjectId.isValid(campaignId)) {
+      return res.status(400).json({ message: "Invalid campaign ID" });
+    }
+
+    const creator = await Creator.findOne({ user: req.user.id });
+    if (!creator) {
+      return res.status(404).json({ message: "Creator profile not found" });
+    }
+
+    const campaign = await CreatorCampaign.findOne({
+      _id: campaignId,
+      creatorId: creator._id,
+    });
+
+    if (!campaign) {
+      return res.status(404).json({ message: "Campaign not found" });
+    }
+
+    let isChanged = false;
+
+    if (title !== undefined) {
+      if (typeof title !== "string" || title.trim() === "") {
+        return res.status(400).json({ message: "Title cannot be empty" });
+      }
+
+      campaign.title = title.trim();
+      isChanged = true;
+    }
+
+    if (ratePerHour !== undefined) {
+      const parsedRatePerHour = Number(ratePerHour);
+
+      if (Number.isNaN(parsedRatePerHour) || parsedRatePerHour <= 0) {
+        return res.status(400).json({ message: "Rate per hour must be a positive number" });
+      }
+
+      campaign.ratePerHour = parsedRatePerHour;
+      isChanged = true;
+    }
+
+    if (tags !== undefined) {
+      let parsedTags = tags;
+
+      if (typeof tags === "string") {
+        try {
+          parsedTags = JSON.parse(tags);
+        } catch {
+          parsedTags = tags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter(Boolean);
+        }
+      }
+
+      if (!Array.isArray(parsedTags) || parsedTags.length === 0) {
+        return res.status(400).json({ message: "At least one tag is required" });
+      }
+
+      campaign.tags = parsedTags.map((tag) => String(tag).trim()).filter(Boolean);
+      isChanged = true;
+    }
+
+    if (description !== undefined) {
+      if (typeof description !== "string" || description.trim() === "") {
+        return res.status(400).json({ message: "Description cannot be empty" });
+      }
+
+      campaign.description = description.trim();
+      isChanged = true;
+    }
+
+    if (!isChanged) {
+      return res.status(400).json({ message: "At least one field must be updated" });
+    }
+
+    await campaign.save();
+
+    return res.status(200).json({
+      message: "Campaign updated successfully",
+      campaign,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
