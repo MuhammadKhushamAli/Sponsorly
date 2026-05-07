@@ -16,12 +16,16 @@ const creatorCampaignSchema = new mongoose.Schema(
       ref: "Creator",
       required: [true, "Creator ID is required"],
     },
-    tags: [
-      {
-        type: String,
-        trim: true,
+    tags: {
+      type: [String],
+      required: true,
+      validate: {
+        validator: function (value) {
+          return value.length > 0;
+        },
+        message: "At least one tag is required",
       },
-    ],
+    },
     description: {
       type: String,
       trim: true,
