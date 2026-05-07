@@ -72,12 +72,11 @@ export const updateSponsorProfile = async (req, res) => {
     if(req.user.role !== "sponsor") {
       return res.status(403).json({ message: "Access denied: Only sponsors can update sponsor profile" });
     }
-
-    const userId = req.user.id;
-
+    
     const {  bio, industries } = req.body ? req.body : {};
     const file = req.file;
-
+    
+    const userId = req.user.id;
     const user = await User.findById(userId);
 
     if (!user) {
@@ -96,9 +95,10 @@ export const updateSponsorProfile = async (req, res) => {
       return res.status(404).json({ message: "Sponsor not found" });
     }
 
+    //we will use this flag to check if at least one field is updated, if not we will return an error
     let isChanged = false;
 
-    // ---------------- IMAGE ----------------
+    // handling image uploadation logic
     if (file) {
       let uploadRes;
       try {
@@ -114,18 +114,13 @@ export const updateSponsorProfile = async (req, res) => {
       isChanged = true;
     }
 
-    // ---------------- BIO ----------------
+    // bio updation logic
     if (bio !== undefined) {
-      if (typeof bio !== "string" || bio.trim() === "") {
-        if (file) await fs.unlink(file.path);
-        return res.status(400).json({ message: "Bio cannot be empty" });
-      }
-
-      user.bio = bio.trim();
+      user.bio = bio.trim(); //to remove whitespace from the beginning and end of a string
       isChanged = true;
     }
 
-    // ---------------- INDUSTRIES ----------------
+    // industries updation logic
     if (industries !== undefined) {
       let parsedIndustries;
 
@@ -154,7 +149,7 @@ export const updateSponsorProfile = async (req, res) => {
       isChanged = true;
     }
 
-    // ---------------- MUST CHANGE CHECK ----------------
+    // must change check
     if (!isChanged) {
       if (file) {
         await fs.unlink(file.path);
@@ -162,17 +157,20 @@ export const updateSponsorProfile = async (req, res) => {
       return res.status(400).json({ message: "At least one field must be updated" });
     }
 
-    // ---------------- PROFILE COMPLETION LOGIC (sponsor) ----------------
+    // profile completion logic (sponsor)
     user.profileCompleted = !!user.profilePicture_url && !!user.bio && Array.isArray(sponsor.industries) && sponsor.industries.length > 0 ;
 
     await user.save();
     await sponsor.save();
 
+    //after all we have to delet uploaded image from public folder of our backend
     if (file) {
       try { await fs.unlink(file.path); } catch {}
     }
 
+    //API response
     return res.status(200).json({ message: "Sponsor profile updated successfully", user, sponsor });
+
   } catch (error) {
     if (req.file) {
       try {
