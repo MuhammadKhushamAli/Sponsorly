@@ -68,6 +68,7 @@ export const requestCollabAsSponsor = async (req, res) => {
   }
 };
 
+//getting requests for a creator campaign
 export const getCreatorCampaignCollabRequests = async (req, res) => {
   try {
     if (req.user.role !== "creator") {
@@ -106,6 +107,7 @@ export const getCreatorCampaignCollabRequests = async (req, res) => {
   }
 };
 
+//getting requests for a sponsor campaign
 export const getSponsorCampaignCollabRequests = async (req, res) => {
   try {
     if (req.user.role !== "sponsor") {
@@ -123,7 +125,7 @@ export const getSponsorCampaignCollabRequests = async (req, res) => {
 
     const campaign = await SponsorCampaign.findById(sponsorCampaignId);
     if (!campaign) return res.status(404).json({ message: "Sponsor campaign not found" });
-    
+
     const creatorProfile = await Creator.findOne({ _id: campaign.creatorId });
     const sponsorCampaignRequests = await CreatorRequestCollab.find({ sponsorCampaignId })
       .populate({
