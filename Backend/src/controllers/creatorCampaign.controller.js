@@ -1,7 +1,7 @@
 import { Creator } from "../models/Creator.model.js";
 import { CreatorCampaign } from "../models/CreatorCampaign.model.js";
 import mongoose from "mongoose";
-import { parseListInput } from "../utils/parseListInput.js";
+import { parseListInput } from "../utils/parseListInput.utils.js";
 
 export const findCreatorCampaigns = async (req, res) => {
   try {

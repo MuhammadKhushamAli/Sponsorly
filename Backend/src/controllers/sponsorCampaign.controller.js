@@ -1,7 +1,7 @@
 import { Sponsor } from "../models/Sponsor.model.js";
 import { SponsorCampaign } from "../models/SponsorCampaign.model.js";
 import mongoose from "mongoose";
-import { parseListInput } from "../utils/parseListInput.js";
+import { parseListInput } from "../utils/parseListInput.utils.js";
 
 export const findSponsorCampaigns = async (req, res) => {
   try {
