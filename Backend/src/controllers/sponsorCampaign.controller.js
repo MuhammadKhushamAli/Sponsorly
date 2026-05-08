@@ -1,35 +1,7 @@
 import { Sponsor } from "../models/Sponsor.model.js";
 import { SponsorCampaign } from "../models/SponsorCampaign.model.js";
 import mongoose from "mongoose";
-
-const parseListInput = (value) => {
-  if (value === undefined) return undefined;
-
-  if (Array.isArray(value)) {
-    return value.map((item) => String(item).trim().toLowerCase()).filter(Boolean);
-  }
-
-  if (typeof value === "string") {
-    try {
-      const parsed = JSON.parse(value);
-      if (Array.isArray(parsed)) {
-        return parsed.map((item) => String(item).trim().toLowerCase()).filter(Boolean);
-      }
-    } catch {
-      return value
-        .split(",")
-        .map((item) => String(item).trim().toLowerCase())
-        .filter(Boolean);
-    }
-
-    return value
-      .split(",")
-      .map((item) => String(item).trim().toLowerCase())
-      .filter(Boolean);
-  }
-
-  return null;
-};
+import { parseListInput } from "../utils/parseListInput.js";
 
 export const findSponsorCampaigns = async (req, res) => {
   try {
