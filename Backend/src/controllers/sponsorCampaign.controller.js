@@ -2,6 +2,101 @@ import { Sponsor } from "../models/Sponsor.model.js";
 import { SponsorCampaign } from "../models/SponsorCampaign.model.js";
 import mongoose from "mongoose";
 
+const parseListInput = (value) => {
+  if (value === undefined) return undefined;
+
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim().toLowerCase()).filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) {
+        return parsed.map((item) => String(item).trim().toLowerCase()).filter(Boolean);
+      }
+    } catch {
+      return value
+        .split(",")
+        .map((item) => String(item).trim().toLowerCase())
+        .filter(Boolean);
+    }
+
+    return value
+      .split(",")
+      .map((item) => String(item).trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  return null;
+};
+
+export const findSponsorCampaigns = async (req, res) => {
+  try {
+    const { tags, title, minBudget, maxBudget } = req.query ? req.query : {};
+    const filter = {};
+
+    if (title !== undefined) {
+      if (typeof title !== "string" || title.trim() === "") {
+        return res.status(400).json({ message: "Title filter cannot be empty" });
+      }
+
+      filter.title = { $regex: title.trim(), $options: "i" };
+    }
+
+    if (tags !== undefined) {
+      const parsedTags = parseListInput(tags);
+
+      if (!Array.isArray(parsedTags) || parsedTags.length === 0) {
+        return res.status(400).json({ message: "At least one tag is required for filtering" });
+      }
+
+      filter.tags = { $in: parsedTags };
+    }
+
+    if (minBudget !== undefined || maxBudget !== undefined) {
+      filter.budget = {};
+
+      if (minBudget !== undefined) {
+        const parsedMinBudget = Number(minBudget);
+        if (Number.isNaN(parsedMinBudget) || parsedMinBudget < 0) {
+          return res.status(400).json({ message: "minBudget must be a valid positive number" });
+        }
+        filter.budget.$gte = parsedMinBudget;
+      }
+
+      if (maxBudget !== undefined) {
+        const parsedMaxBudget = Number(maxBudget);
+        if (Number.isNaN(parsedMaxBudget) || parsedMaxBudget < 0) {
+          return res.status(400).json({ message: "maxBudget must be a valid positive number" });
+        }
+        filter.budget.$lte = parsedMaxBudget;
+      }
+
+      if (filter.budget.$gte !== undefined && filter.budget.$lte !== undefined && filter.budget.$gte > filter.budget.$lte) {
+        return res.status(400).json({ message: "minBudget cannot be greater than maxBudget" });
+      }
+    }
+
+    const campaigns = await SponsorCampaign.find(filter)
+      .populate({
+        path: "sponsorId",
+        populate: {
+          path: "user",
+          select: "name email role bio profilePicture_url profilePicture_id",
+        },
+      })
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      count: campaigns.length,
+      campaigns,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 export const createSponsorCampaign = async (req, res) => {
   try {
     if (req.user.role !== "sponsor") {

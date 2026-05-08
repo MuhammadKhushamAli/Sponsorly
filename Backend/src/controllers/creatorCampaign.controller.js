@@ -2,6 +2,101 @@ import { Creator } from "../models/Creator.model.js";
 import { CreatorCampaign } from "../models/CreatorCampaign.model.js";
 import mongoose from "mongoose";
 
+const parseListInput = (value) => {
+  if (value === undefined) return undefined;
+
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim().toLowerCase()).filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) {
+        return parsed.map((item) => String(item).trim().toLowerCase()).filter(Boolean);
+      }
+    } catch {
+      return value
+        .split(",")
+        .map((item) => String(item).trim().toLowerCase())
+        .filter(Boolean);
+    }
+
+    return value
+      .split(",")
+      .map((item) => String(item).trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  return null;
+};
+
+export const findCreatorCampaigns = async (req, res) => {
+  try {
+    const { tags, title, minRatePerHour, maxRatePerHour } = req.query ? req.query : {};
+    const filter = {};
+
+    if (title !== undefined) {
+      if (typeof title !== "string" || title.trim() === "") {
+        return res.status(400).json({ message: "Title filter cannot be empty" });
+      }
+
+      filter.title = { $regex: title.trim(), $options: "i" };
+    }
+
+    if (tags !== undefined) {
+      const parsedTags = parseListInput(tags);
+
+      if (!Array.isArray(parsedTags) || parsedTags.length === 0) {
+        return res.status(400).json({ message: "At least one tag is required for filtering" });
+      }
+
+      filter.tags = { $in: parsedTags };
+    }
+
+    if (minRatePerHour !== undefined || maxRatePerHour !== undefined) {
+      filter.ratePerHour = {};
+
+      if (minRatePerHour !== undefined) {
+        const parsedMinRate = Number(minRatePerHour);
+        if (Number.isNaN(parsedMinRate) || parsedMinRate < 0) {
+          return res.status(400).json({ message: "minRatePerHour must be a valid positive number" });
+        }
+        filter.ratePerHour.$gte = parsedMinRate;
+      }
+
+      if (maxRatePerHour !== undefined) {
+        const parsedMaxRate = Number(maxRatePerHour);
+        if (Number.isNaN(parsedMaxRate) || parsedMaxRate < 0) {
+          return res.status(400).json({ message: "maxRatePerHour must be a valid positive number" });
+        }
+        filter.ratePerHour.$lte = parsedMaxRate;
+      }
+
+      if (filter.ratePerHour.$gte !== undefined && filter.ratePerHour.$lte !== undefined && filter.ratePerHour.$gte > filter.ratePerHour.$lte) {
+        return res.status(400).json({ message: "minRatePerHour cannot be greater than maxRatePerHour" });
+      }
+    }
+
+    const campaigns = await CreatorCampaign.find(filter)
+      .populate({
+        path: "creatorId",
+        populate: {
+          path: "user",
+          select: "name email role bio profilePicture_url profilePicture_id",
+        },
+      })
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      count: campaigns.length,
+      campaigns,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 export const createCreatorCampaign = async (req, res) => {
   try {
     if (req.user.role !== "creator") {
