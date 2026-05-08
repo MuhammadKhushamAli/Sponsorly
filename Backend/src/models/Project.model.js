@@ -8,8 +8,9 @@ const projectSchema = new mongoose.Schema(
     },
     status: {
       type: String,
+      enum: ["working", "completed", "cancelled"],
+      default: "working",
       required: [true, "Status is required"],
-      trim: true,
     },
     chat: {
       type: mongoose.Schema.Types.ObjectId,
