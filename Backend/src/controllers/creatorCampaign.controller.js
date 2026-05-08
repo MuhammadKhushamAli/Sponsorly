@@ -2,7 +2,7 @@ import { Creator } from "../models/Creator.model.js";
 import { CreatorCampaign } from "../models/CreatorCampaign.model.js";
 import mongoose from "mongoose";
 
-export const createCampaign = async (req, res) => {
+export const createCreatorCampaign = async (req, res) => {
   try {
     if (req.user.role !== "creator") {
       return res.status(403).json({
@@ -67,7 +67,7 @@ export const createCampaign = async (req, res) => {
   }
 };
 
-export const updateCampaign = async (req, res) => {
+export const updateCreatorCampaign = async (req, res) => {
   try {
     if (req.user.role !== "creator") {
       return res.status(403).json({ message: "Access denied: Only creators can update campaigns" });
@@ -150,7 +150,7 @@ export const updateCampaign = async (req, res) => {
   }
 };
 
-export const deleteCampaign = async (req, res) => {
+export const deleteCreatorCampaign = async (req, res) => {
   try {
     if (req.user.role !== "creator") {
       return res.status(403).json({ message: "Access denied: Only creators can delete campaigns" });

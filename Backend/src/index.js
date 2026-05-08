@@ -8,13 +8,13 @@ dotenv.config();
 import authRoutes from "./routes/auth.routes.js";
 import sponsorshipRoutes from "./routes/sponsors.routes.js";
 import creatorRoutes from "./routes/creators.routes.js";
-import campaignRoutes from "./routes/creatorCampaign.routes.js";
+import creatorcampaignRoutes from "./routes/creatorCampaign.routes.js";
 
 //routes
 app.use("/auth", authRoutes);
 app.use("/sponsors", sponsorshipRoutes);
 app.use("/creators", creatorRoutes);
-app.use("/campaigns", campaignRoutes);
+app.use("/creator-campaigns", creatorcampaignRoutes);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Sponsorly API");
