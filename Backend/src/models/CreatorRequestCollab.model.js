@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const creatorCollabRequestSchema = new mongoose.Schema(
+const creatorRequestCollabSchema = new mongoose.Schema(
   {
     sponsorCampaignId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -27,4 +27,4 @@ const creatorCollabRequestSchema = new mongoose.Schema(
   }
 );
 
-export const CreatorCollabRequest = mongoose.model("CreatorCollabRequest", creatorCollabRequestSchema);
+export const CreatorCollabRequest = mongoose.model("CreatorCollabRequest", creatorRequestCollabSchema);
