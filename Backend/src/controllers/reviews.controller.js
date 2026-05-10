@@ -17,6 +17,27 @@ const getUserProfile = async (userId, role) => {
   return null;
 };
 
+const updateProfileRating = async (profile, role) => {
+  const reviewIds = role === "creator" ? profile.reviews || [] : profile.ratings || [];
+
+  if (reviewIds.length === 0) {
+    profile.rating = role === "creator"
+      ? mongoose.Types.Decimal128.fromString("0")
+      : 0;
+    return profile;
+  }
+
+  const reviews = await Review.find({ _id: { $in: reviewIds } }).select("rating");
+  const total = reviews.reduce((sum, item) => sum + Number(item.rating), 0);
+  const average = total / reviews.length;
+
+  profile.rating = role === "creator"
+    ? mongoose.Types.Decimal128.fromString(average.toFixed(2))
+    : average;
+
+  return profile;
+};
+
 export const createReview = async (req, res) => {
   try {
     const { revieweeId } = req.params ? req.params : {};
@@ -84,12 +105,13 @@ export const createReview = async (req, res) => {
     if (reviewee.role === "creator") {
       revieweeProfile.reviews = revieweeProfile.reviews || [];
       revieweeProfile.reviews.push(review._id);
-      await revieweeProfile.save();
     } else if (reviewee.role === "sponsor") {
       revieweeProfile.ratings = revieweeProfile.ratings || [];
       revieweeProfile.ratings.push(review._id);
-      await revieweeProfile.save();
     }
+
+    await updateProfileRating(revieweeProfile, reviewee.role);
+    await revieweeProfile.save();
 
     return res.status(201).json({
       message: "Review created successfully",
@@ -127,13 +149,14 @@ export const deleteReview = async (req, res) => {
           revieweeProfile.reviews = revieweeProfile.reviews.filter(
             (id) => id.toString() !== review._id.toString()
           );
-          await revieweeProfile.save();
         } else if (reviewee.role === "sponsor" && Array.isArray(revieweeProfile.ratings)) {
           revieweeProfile.ratings = revieweeProfile.ratings.filter(
             (id) => id.toString() !== review._id.toString()
           );
-          await revieweeProfile.save();
         }
+
+        await updateProfileRating(revieweeProfile, reviewee.role);
+        await revieweeProfile.save();
       }
     }
 
