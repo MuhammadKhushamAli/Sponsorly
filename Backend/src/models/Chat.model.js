@@ -4,7 +4,9 @@ const chatSchema = new mongoose.Schema(
   {
     messages: [
       {
-        type: String,
+        senderId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        content: { type: String, required: true },
+        sentAt: { type: Date, default: Date.now },
       },
     ],
     projectChat: {
