@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Chat } from "../models/Chat.model.js";
+import { Project } from "../models/Project.model.js";
 import { User } from "../models/User.model.js";
 
 export const createDirectChat = async (req, res) => {

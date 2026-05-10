@@ -6,6 +6,7 @@ import { SponsorCampaign } from "../models/SponsorCampaign.model.js";
 import { CreatorRequestCollab } from "../models/CreatorRequestCollab.model.js";
 import { SponsorRequestCollab } from "../models/SponsorRequestCollab.model.js";
 import { Project } from "../models/Project.model.js";
+import { Chat } from "../models/Chat.model.js";
 
 const createProjectForCollab = async ({ payment, creatorProfile, sponsorProfile }) => {
   const project = await Project.create({
@@ -13,13 +14,26 @@ const createProjectForCollab = async ({ payment, creatorProfile, sponsorProfile 
     status: "working",
   });
 
+  // create a project-scoped chat and link it
+  const chat = await Chat.create({
+    messages: [],
+    projectChat: project._id,
+  });
+
+  project.chat = chat._id;
+  await project.save();
+
   if (creatorProfile && Array.isArray(creatorProfile.previousProjects)) {
     creatorProfile.previousProjects.push(project._id);
+    // also link chat
+    if (Array.isArray(creatorProfile.chats)) creatorProfile.chats.push(chat._id);
     await creatorProfile.save();
   }
 
   if (sponsorProfile && Array.isArray(sponsorProfile.previousProjects)) {
     sponsorProfile.previousProjects.push(project._id);
+    // also link chat
+    if (Array.isArray(sponsorProfile.chats)) sponsorProfile.chats.push(chat._id);
     await sponsorProfile.save();
   }
 
