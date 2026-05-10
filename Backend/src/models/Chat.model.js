@@ -12,6 +12,7 @@ const chatSchema = new mongoose.Schema(
     projectChat: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Project",
+      default: null,
     },
   },
   {
