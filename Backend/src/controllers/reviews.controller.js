@@ -100,6 +100,52 @@ export const createReview = async (req, res) => {
   }
 };
 
+export const deleteReview = async (req, res) => {
+  try {
+    const { reviewId } = req.params ? req.params : {};
+
+    if (!reviewId || !mongoose.Types.ObjectId.isValid(reviewId)) {
+      return res.status(400).json({ message: "Valid reviewId is required" });
+    }
+
+    const review = await Review.findById(reviewId);
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    // Only the reviewer can delete their review
+    if (review.reviewerId.toString() !== req.user.id) {
+      return res.status(403).json({ message: "You can only delete your own review" });
+    }
+
+    const reviewee = await User.findById(review.revieweeId);
+    if (reviewee) {
+      const revieweeProfile = await getUserProfile(reviewee._id, reviewee.role);
+
+      if (revieweeProfile) {
+        if (reviewee.role === "creator" && Array.isArray(revieweeProfile.reviews)) {
+          revieweeProfile.reviews = revieweeProfile.reviews.filter(
+            (id) => id.toString() !== review._id.toString()
+          );
+          await revieweeProfile.save();
+        } else if (reviewee.role === "sponsor" && Array.isArray(revieweeProfile.ratings)) {
+          revieweeProfile.ratings = revieweeProfile.ratings.filter(
+            (id) => id.toString() !== review._id.toString()
+          );
+          await revieweeProfile.save();
+        }
+      }
+    }
+
+    await Review.findByIdAndDelete(reviewId);
+
+    return res.status(200).json({ message: "Review deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 export default {
   createReview,
+  deleteReview,
 };
