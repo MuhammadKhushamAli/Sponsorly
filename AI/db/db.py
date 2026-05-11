@@ -34,7 +34,7 @@ class MongoDBManager:
         except Exception as e:
             raise Exception(f"Error in cLossing DB connection {e}")
         
-    async def creator_compaign(self, tags: List[str]) -> str:
+    async def creator_compaign_finder(self, tags: List[str]) -> str:
         """It Find the creator's compaigns by matching the tags with sponsor's desired tags"""
 
         collection = self.db["creatorcampaigns"]
@@ -63,6 +63,7 @@ class MongoDBManager:
                                 "pipeline": [
                                     {
                                         "$project": {
+                                            "_id": 0,
                                             "name": 1,
                                             "email": 1,
                                             "location": 1
@@ -80,6 +81,7 @@ class MongoDBManager:
                                 "pipeline": [
                                     {
                                         "$project": {
+                                            "_id": 0,
                                             "rating": 1,
                                             "comment": 1
                                         }
@@ -90,22 +92,13 @@ class MongoDBManager:
                         {
                             "$addFields": {
                                 "user_detail": {
-                                    "$first": "user_detail"
+                                    "$first": "$user_detail"
                                 },
-                                "ratings": {
-                                    "$map": {
-                                        "input": "$reviews",
-                                        "as": "r",
-                                        "in": "$$r.rating"
-                                    }
-                                },
-                                "rating": {
-                                    "$avg": "$ratings"
-                                }
                             }
                         },
                         {
                             "$project": {
+                                "_id": 0,
                                 "user_detail": 1,
                                 "previousProjects": 1,
                                 "links": 1,
@@ -126,21 +119,20 @@ class MongoDBManager:
             },
             {
                 "$project": {
+                    "_id": 0,
                     "title": 1,
                     "ratePerHour": 1,
                     "tags": 1,
                     "description": 1,
-                    "creator_Detail": 1
+                    "creator_detail": 1
                 }
             }
         ]
         result_cursor = await collection.aggregate(pipeline)
-        returned_str: str = "The creators compaigns matched to your desired tags are:" + "\n\n".join(
-            [f"Compaign has:\nTitle: {doc.title}\nRate Per Hour:{doc.ratePerHour}\nTags:{doc.tags}\nDescription:{doc.description}\nCreator Details: {doc.creator_Detail}" async for doc in result_cursor]
+        returned_str: str = "The creators compaigns matched to your desired tags are:\n" + "\n\n".join(
+            [f"Compaign has:\nTitle: {doc["title"]}\nRate Per Hour:{doc["ratePerHour"]}\nTags:{doc["tags"]}\nDescription:{doc["description"]}\nCreator Details: {doc["creator_detail"]}" async for doc in result_cursor]
         )
         await self.close_connection()
-
-        print(returned_str)
 
         return returned_str
     
@@ -238,7 +230,7 @@ class MongoDBManager:
  
         result_cursor = await collection.aggregate(pipeline)
 
-        returned_str: str = "The sponsors compaigns matched to your desired tags are:" + "\n\n".join(
+        returned_str: str = "The sponsors compaigns matched to your desired tags are:\n" + "\n\n".join(
             [f"Compaign has:\nTitle: {doc["title"]}\nBudget:{doc["budget"]}\nTags:{doc["tags"]}\nDescription:{doc["description"]}\nSponsor Details: {doc["sponsor_detail"]} " async for doc in result_cursor]
         )
         await self.close_connection()
@@ -253,7 +245,7 @@ async def main():
     "mongodb+srv://Khusham:KJutt.387@studybackend.jmaospe.mongodb.net",
     "Sponsorly"
     )
-    result = await mongo_db_manager.creator_compaign(
+    result = await mongo_db_manager.sponsors_compaigns_finder(
         ["short-form"]
     )
     print(result)
