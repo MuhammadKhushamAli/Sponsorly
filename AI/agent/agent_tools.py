@@ -10,7 +10,7 @@ async def creators_compaigns_finder(tags: List[str]) -> str:
     Returns: str
     """
 
-    return mongo_db_manager.creator_compaign(tags)
+    return await mongo_db_manager.creator_compaign(tags)
 
 
 @function_tool
@@ -21,4 +21,4 @@ async def sponsors_compaigns_finder(tags: List[str]) -> str:
     Returns: str
     """
 
-    return mongo_db_manager.sponsors_compaigns_finder(tags)
+    return await mongo_db_manager.sponsors_compaigns_finder(tags)
