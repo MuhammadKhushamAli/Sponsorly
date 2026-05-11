@@ -15,9 +15,21 @@ app.use(cors({
   origin: function (origin, callback) {
     // Allow non-browser requests like curl/postman which have no origin
     if (!origin) return callback(null, true);
+
+    // Allow explicit matches
     if (allowedOrigins.indexOf(origin) !== -1) {
       return callback(null, true);
     }
+
+    // Allow any localhost or 127.0.0.1 origin for local dev (ports may vary)
+    try {
+      if (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+        return callback(null, true);
+      }
+    } catch (e) {
+      // ignore
+    }
+
     return callback(new Error('CORS policy: This origin is not allowed - ' + origin));
   },
   credentials: true,

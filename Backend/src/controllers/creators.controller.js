@@ -10,22 +10,22 @@ export const getCreators = async (req, res) => {
   try {
     let { niche, rating } = req.query;
 
-    const completedUsers = await User.find({
-      role: "creator",
-      profileCompleted: true,
-    }).select("_id");
+    // const completedUsers = await User.find({
+    //   role: "creator",
+    //   profileCompleted: true,
+    // }).select("_id");
 
-    const completedUserIds = completedUsers.map((user) => user._id);
+    // const completedUserIds = completedUsers.map((user) => user._id);
 
-    if (completedUserIds.length === 0) {
-      return res.status(200).json({
-        count: 0,
-        creators: [],
-      });
-    }
+    // if (completedUserIds.length === 0) {
+    //   return res.status(200).json({
+    //     count: 0,
+    //     creators: [],
+    //   });
+    // }
 
     const filter = {
-      user: { $in: completedUserIds },
+      //user: { $in: completedUserIds },
     };
     
     // 1. Niche filter

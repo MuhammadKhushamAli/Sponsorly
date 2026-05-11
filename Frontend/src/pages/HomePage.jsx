@@ -2,10 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Layout/Layout';
 import { Button } from '../components/common/UIComponents';
+import { creatorAPI } from '../services/api';
 import { Sparkles, Zap, Shield, Users, ArrowRight, TrendingUp } from 'lucide-react';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const isAuthenticated = !!localStorage.getItem('accessToken');
 
   const features = [
     {
@@ -55,21 +57,50 @@ const HomePage = () => {
             <p className="text-xl text-gray-600 leading-relaxed">
               The intelligent platform for creators and brands to discover, collaborate, and grow together. Smart matching, secure payments, and transparent communication.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
               <Button
                 size="lg"
-                onClick={() => navigate('/signup')}
-                className="flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 bg-primary-600 text-white"
+                onClick={async () => {
+                  // prefetch creators (no history recording)
+                  try {
+                    await creatorAPI.getCreators();
+                  } catch (e) {
+                    // ignore prefetch errors
+                  }
+                  navigate('/creators');
+                }}
               >
-                Get Started <ArrowRight size={20} />
+                Explore Creators
               </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => navigate('/login')}
-              >
-                Login to Account
-              </Button>
+
+              {isAuthenticated ? (
+                <Button
+                  size="lg"
+                  onClick={() => navigate('/signup')}
+                  className="flex items-center justify-center gap-2"
+                >
+                  Create New Account <ArrowRight size={20} />
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    size="lg"
+                    onClick={() => navigate('/signup')}
+                    className="flex items-center justify-center gap-2"
+                  >
+                    Get Started <ArrowRight size={20} />
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => navigate('/login')}
+                  >
+                    Login to Account
+                  </Button>
+                </>
+              )}
             </div>
           </div>
 
@@ -141,7 +172,7 @@ const HomePage = () => {
             className="bg-white text-primary-600 hover:bg-gray-50 font-bold"
             onClick={() => navigate('/signup')}
           >
-            Start Your Journey Today
+            {isAuthenticated ? 'Create New Account' : 'Start Your Journey Today'}
           </Button>
         </div>
       </section>

@@ -11,6 +11,7 @@ import DashboardPage from './pages/DashboardPage';
 import CampaignsPage from './pages/CampaignsPage';
 import ChatPage from './pages/ChatPage';
 import ProfilePage from './pages/ProfilePage';
+import CreatorsPage from './pages/CreatorsPage';
 
 // Layout
 import { MainLayout } from './components/Layout/Layout';
@@ -30,6 +31,9 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
+
+          {/* Public Routes */}
+          <Route path="/creators" element={<CreatorsPage />} />
 
           {/* Protected Routes */}
           <Route
