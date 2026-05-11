@@ -4,9 +4,11 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export async function connectDB() {
-  try {
-    return await mongoose.connect(`${process.env.DB_URI}/Sponsorly`);
-  } catch (error) {
-    console.log(error);
-  }
+    return await mongoose.connect(`${process.env.DB_URI}/Sponsorly`)
+    .then(()=>{
+      console.log("dataBase connected Successfully");
+      })
+      .catch((err)=>{
+          console.log("dataBase connection failed: ", err.message);
+      })
 }
