@@ -1,6 +1,8 @@
 from pymongo import AsyncMongoClient, database
 import pymongo
 from typing import List, Dict
+import asyncio
+from bson import ObjectId
 
 
 class MongoDBManager:
@@ -21,6 +23,7 @@ class MongoDBManager:
                 )
             )
             self.db = self.__client[db_name]
+            print("Connected to MongoDB")
         except Exception as e:
             raise Exception(f"Unable to Connect to Mongo DB: {e}")
     
@@ -132,7 +135,6 @@ class MongoDBManager:
             }
         ]
         result_cursor = await collection.aggregate(pipeline)
-
         returned_str: str = "The creators compaigns matched to your desired tags are:" + "\n\n".join(
             [f"Compaign has:\nTitle: {doc.title}\nRate Per Hour:{doc.ratePerHour}\nTags:{doc.tags}\nDescription:{doc.description}\nCreator Details: {doc.creator_Detail}" async for doc in result_cursor]
         )
@@ -145,7 +147,7 @@ class MongoDBManager:
     async def sponsors_compaigns_finder(self, tags: List[str]) -> SyntaxError:
         """It Find the sponsors's compaigns by matching the tags with creator's desired tags"""
 
-        collection = self.db["sponsercampaigns"]
+        collection = self.db["sponsorcampaigns"]
         
         pipeline: List[Dict] = [
             {
@@ -157,8 +159,8 @@ class MongoDBManager:
             },
             {
                 "$lookup": {
-                    "from": "sponsers",
-                    "localField": "sponserId",
+                    "from": "sponsors",
+                    "localField": "sponsorId",
                     "foreignField": "_id",
                     "as": "sponsor_detail",
                     "pipeline": [
@@ -171,6 +173,7 @@ class MongoDBManager:
                                 "pipeline": [
                                     {
                                         "$project": {
+                                            "_id": 0,
                                             "name": 1,
                                             "email": 1,
                                             "location": 1
@@ -188,6 +191,7 @@ class MongoDBManager:
                                 "pipeline": [
                                     {
                                         "$project": {
+                                            "_id": 0,
                                             "rating": 1,
                                             "comment": 1
                                         }
@@ -198,25 +202,17 @@ class MongoDBManager:
                         {
                             "$addFields": {
                                 "user_detail": {
-                                    "$first": "user_detail"
+                                    "$arrayElemAt": ["$user_detail", 0]
                                 },
-                                "ratings": {
-                                    "$map": {
-                                        "input": "$ratings",
-                                        "as": "r",
-                                        "in": "$$r.rating"
-                                    }
-                                },
-                                "rating": {
-                                    "$avg": "$ratings"
-                                }
                             }
                         },
                         {
                             "$project": {
+                                "_id": 0,
                                 "user_detail": 1,
                                 "previousProjects": 1,
-                                "rating": 1
+                                "rating": 1,
+                                "ratings": 1
                             }
                         }
                     ]
@@ -225,7 +221,7 @@ class MongoDBManager:
             {
                 "$addFields": {
                     "sponsor_detail": {
-                        "$first": "$sponsor_detail"
+                        "$arrayElemAt": ["$sponsor_detail", 0]
                     }
                 }
             },
@@ -239,16 +235,29 @@ class MongoDBManager:
                 }
             }
         ]
+ 
         result_cursor = await collection.aggregate(pipeline)
 
-        returned_str: str = "The creators compaigns matched to your desired tags are:" + "\n\n".join(
-            [f"Compaign has:\nTitle: {doc.title}\nBudget:{doc.budget}\nTags:{doc.tags}\nDescription:{doc.description}\nSponsor Details: {doc.sponsor_detail}" async for doc in result_cursor]
+        returned_str: str = "The sponsors compaigns matched to your desired tags are:" + "\n\n".join(
+            [f"Compaign has:\nTitle: {doc["title"]}\nBudget:{doc["budget"]}\nTags:{doc["tags"]}\nDescription:{doc["description"]}\nSponsor Details: {doc["sponsor_detail"]} " async for doc in result_cursor]
         )
         await self.close_connection()
-
-        print(returned_str)
 
         return returned_str
 
 
 mongo_db_manager: MongoDBManager = MongoDBManager()
+
+async def main():
+    await mongo_db_manager.connect_db(
+    "mongodb+srv://Khusham:KJutt.387@studybackend.jmaospe.mongodb.net",
+    "Sponsorly"
+    )
+    result = await mongo_db_manager.creator_compaign(
+        ["short-form"]
+    )
+    print(result)
+
+
+
+asyncio.run(main())
