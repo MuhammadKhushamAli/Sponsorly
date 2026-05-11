@@ -5,10 +5,4 @@ dotenv.config();
 
 export async function connectDB() {
     return await mongoose.connect(`${process.env.DB_URI}/Sponsorly`)
-    .then(()=>{
-      console.log("dataBase connected Successfully");
-      })
-      .catch((err)=>{
-          console.log("dataBase connection failed: ", err.message);
-      })
 }
