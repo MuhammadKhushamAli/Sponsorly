@@ -138,7 +138,7 @@ export const loginUser = async (req, res) => {
         httpOnly: true,
         secure: false, // true in production
         sameSite: "lax",
-        maxAge: 15 * 60 * 1000,
+        maxAge: 24 * 60 * 60 * 1000,
       });
 
       res.cookie("refreshToken", refreshToken, {
@@ -242,7 +242,7 @@ export const refreshAccessToken = async (req, res) => {
         httpOnly: true,
         secure: false, // true in production
         sameSite: "lax",
-        maxAge: 15 * 60 * 1000,
+        maxAge: 24 * 60 * 60 * 1000,
       });
 
       res.cookie("refreshToken", newRefreshToken, {
