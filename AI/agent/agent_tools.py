@@ -20,5 +20,4 @@ async def sponsors_compaigns_finder(tags: List[str]) -> str:
     Params: tags: List[str]
     Returns: str
     """
-
     return await mongo_db_manager.sponsors_compaigns_finder(tags)

@@ -5,7 +5,6 @@ from typing import Literal, List
 class UserData:
     name: str
     email: str
-    location: str
     tags: list[str]
     role: Literal["sponsor", "creator"]
 

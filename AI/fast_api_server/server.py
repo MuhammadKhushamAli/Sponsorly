@@ -22,13 +22,11 @@ async def interacting_with_agent(
     message: ChatBotMessage = Body(..., description="The user query for the chat bot to start the conversation"),
     context: UserContext = Body(..., description="It is required to setup the context of user for chat bot")
 ):
-
     chat_bot_reply: Dict[str, str] = await agent_caller(
         user_input=message.message,
         context=UserData(
             name=context.user_name,
             email=context.user_email,
-            location=context.user_location,
             tags=context.user_tags,
             role=context.user_role
         ),
