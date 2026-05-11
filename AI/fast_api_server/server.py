@@ -1,11 +1,29 @@
 from fastapi import FastAPI, Query, Body
+from contextlib import asynccontextmanager
 from .pydantic_model.chat_bot_message_model import ChatBotMessage
 from .pydantic_model.user_context_model import UserContext
 from agent.agent import agent_caller
 from typing import Dict
 from user_data.user_data import UserData
+from db.db import mongo_db_manager
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-app: FastAPI = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+
+    await mongo_db_manager.connect_db(
+        mongo_db_uri=os.getenv("MONGO_DB_URI"),
+        db_name=os.getenv("DB_NAME", "Sponserly")
+    )
+    yield
+
+    await mongo_db_manager.close_connection()
+
+
+app: FastAPI = FastAPI(lifespan=lifespan)
 
 
 @app.get("/")

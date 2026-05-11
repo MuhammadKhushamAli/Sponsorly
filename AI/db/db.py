@@ -129,11 +129,10 @@ class MongoDBManager:
         returned_str: str = "The creators compaigns matched to your desired tags are:\n" + "\n\n".join(
             [f"Compaign has:\nTitle: {doc["title"]}\nRate Per Hour:{doc["ratePerHour"]}\nTags:{doc["tags"]}\nDescription:{doc["description"]}\nCreator Details: {doc["creator_detail"]}" async for doc in result_cursor]
         )
-        await self.close_connection()
 
         return returned_str
     
-    async def sponsors_compaigns_finder(self, tags: List[str]) -> SyntaxError:
+    async def sponsors_compaigns_finder(self, tags: List[str]) -> str:
         """It Find the sponsors's compaigns by matching the tags with creator's desired tags"""
 
         collection = self.db["sponsorcampaigns"]
@@ -230,7 +229,6 @@ class MongoDBManager:
         returned_str: str = "The sponsors compaigns matched to your desired tags are:\n" + "\n\n".join(
             [f"Compaign has:\nTitle: {doc["title"]}\nBudget:{doc["budget"]}\nTags:{doc["tags"]}\nDescription:{doc["description"]}\nSponsor Details: {doc["sponsor_detail"]} " async for doc in result_cursor]
         )
-        await self.close_connection()
 
         return returned_str
 
