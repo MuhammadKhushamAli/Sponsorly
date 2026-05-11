@@ -8,7 +8,17 @@ load_dotenv()
 def instruction_generator(wrapper: RunContextWrapper[UserData], agent: Agent) -> str:
     """Generates instructions for the agent based on the user data context."""
     context: UserData = wrapper.context
-    return f"You are a helpful assistant. Your name is {agent.name} The user is {context.name}. His role is {context.role}. They have the following tags: {', '.join(context.tags)}. Answer the user's question based on this information."
+    return f"""
+    You are a helpful assistant.
+    Your source of truth must be the database, you can access it using tool call.
+    Your name is {agent.name}
+    The user is {context.name}.
+    His role is {context.role}.
+    They have the following tags: {', '.join(context.tags)}.
+    Answer the user's question based on this information.
+
+    Not Found Reply: 'I cannot find anything for your requirement.'
+    """
 
 
 async def agent_caller(user_input: str, context: UserData, prev_response_id: str) -> Dict[str, str]:
