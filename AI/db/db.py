@@ -1,9 +1,6 @@
 from pymongo import AsyncMongoClient, database
 import pymongo
 from typing import List, Dict
-import asyncio
-from bson import ObjectId
-
 
 class MongoDBManager:
 
@@ -239,17 +236,3 @@ class MongoDBManager:
 
 
 mongo_db_manager: MongoDBManager = MongoDBManager()
-
-async def main():
-    await mongo_db_manager.connect_db(
-    "mongodb+srv://Khusham:KJutt.387@studybackend.jmaospe.mongodb.net",
-    "Sponsorly"
-    )
-    result = await mongo_db_manager.sponsors_compaigns_finder(
-        ["short-form"]
-    )
-    print(result)
-
-
-
-asyncio.run(main())
