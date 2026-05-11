@@ -42,6 +42,16 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md">
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="text-sm text-gray-600 hover:text-gray-800"
+            aria-label="Go back"
+          >
+            ← Back
+          </button>
+        </div>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold bg-gradient-brand bg-clip-text text-transparent mb-2">
             Welcome Back
