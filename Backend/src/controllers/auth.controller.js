@@ -77,7 +77,7 @@ export const signupUser = async (req, res) => {
       httpOnly: true,
       secure: false, // true in production (HTTPS)
       sameSite: "lax",
-      maxAge: 15 * 60 * 1000, // 15 min
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
 
     res.cookie("refreshToken", refreshToken, {
