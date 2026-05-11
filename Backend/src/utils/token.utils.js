@@ -9,7 +9,7 @@ export const generateAccessToken = (user) => {
       email: user.email,
     },
     process.env.ACCESS_SECRET,
-    { expiresIn: "15m" }
+    { expiresIn: "1d" }
   );
 };
 
