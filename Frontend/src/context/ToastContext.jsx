@@ -29,7 +29,7 @@ const BORDERS = {
   success: 'border-l-green-500',
   error:   'border-l-red-500',
   warning: 'border-l-yellow-500',
-  info:    'border-l-blue-500',
+  info:    'border-l-primary-600',
 };
 
 const PROGRESS_COLORS = {

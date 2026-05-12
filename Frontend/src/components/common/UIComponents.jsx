@@ -156,7 +156,7 @@ export const Alert = ({ type = 'info', message, title, onClose, className = '' }
     success: { cls: 'bg-green-50 border-green-200 text-green-800',  Icon: CheckCircle },
     error:   { cls: 'bg-red-50 border-red-200 text-red-800',        Icon: XCircle },
     warning: { cls: 'bg-yellow-50 border-yellow-200 text-yellow-800', Icon: AlertTriangle },
-    info:    { cls: 'bg-blue-50 border-blue-200 text-blue-800',     Icon: Info },
+    info:    { cls: 'bg-primary-50 border-primary-200 text-primary-800',   Icon: Info },
   };
   const { cls, Icon } = cfg[type] ?? cfg.info;
 
