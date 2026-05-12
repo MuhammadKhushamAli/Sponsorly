@@ -17,7 +17,7 @@ import {
   Clock,
   ArrowLeft,
   RefreshCw,
-  Handshake,
+  Link2,
   Mail,
   Star,
   FolderOpen,
@@ -278,7 +278,7 @@ const CollabRequestsPage = () => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-                <Handshake size={18} className="text-white" />
+                <Link2 size={18} className="text-white" />
               </div>
               <h1 className="text-2xl font-bold">Collaboration Requests</h1>
             </div>

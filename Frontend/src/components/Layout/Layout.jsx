@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Menu, X, LogOut, User, Home, MessageSquare, Award, Handshake } from 'lucide-react';
+import { Menu, X, LogOut, User, Home, MessageSquare, Award, Link2 } from 'lucide-react';
 import { logout } from "../../redux/slices/authSlice";
 import { Button } from "../common/UIComponents";
 import AIChatBubble from '../common/AIChatBubble';
@@ -140,7 +140,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
   const menuItems = [
     { icon: Home, label: 'Dashboard', href: '/dashboard' },
     { icon: Award, label: 'Campaigns', href: '/campaigns' },
-    { icon: Handshake, label: 'Collabs', href: '/campaigns' },
+    { icon: Link2, label: 'Collabs', href: '/campaigns' },
     { icon: MessageSquare, label: 'Messages', href: '/chat' },
     { icon: User, label: 'Profile', href: '/profile' },
   ];

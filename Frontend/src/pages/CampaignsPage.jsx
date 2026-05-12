@@ -10,7 +10,7 @@ import {
   X,
   Search,
   RefreshCw,
-  Handshake,
+  Link2,
   Users,
 } from 'lucide-react';
 import { creatorCampaignAPI, sponsorCampaignAPI, collabAPI } from '../services/api';
@@ -163,10 +163,12 @@ const CampaignsPage = () => {
     try {
       const res = await myCampaignApi.find({});
       const all = extractCampaigns(res);
+      // Support both user.id (JWT decoded) and user._id (Mongo)
+      const userId = user?.id || user?._id;
       const mine = all.filter((c) =>
         isCreator
-          ? isCreatorCampaignMine(c, user?.id)
-          : isSponsorCampaignMine(c, user?.id)
+          ? isCreatorCampaignMine(c, userId)
+          : isSponsorCampaignMine(c, userId)
       );
       setMineList(mine);
     } catch (e) {
@@ -176,7 +178,7 @@ const CampaignsPage = () => {
     } finally {
       setLoadingMine(false);
     }
-  }, [isCreator, isSponsor, myCampaignApi, user?.id]);
+  }, [isCreator, isSponsor, myCampaignApi, user?.id, user?._id]);
 
   useEffect(() => {
     if (!isCreator && !isSponsor) return;
@@ -203,6 +205,12 @@ const CampaignsPage = () => {
     return () => {
       cancelled = true;
     };
+  }, [isCreator, isSponsor]);
+
+  // Always pre-fetch mine so switching tabs is instant
+  useEffect(() => {
+    if (isCreator || isSponsor) fetchMine();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCreator, isSponsor]);
 
   useEffect(() => {
@@ -319,6 +327,10 @@ const CampaignsPage = () => {
         setBanner('Campaign updated.');
       }
       setModalOpen(false);
+      if (modalMode === 'create') {
+        // Switch to 'mine' tab so the user immediately sees their new campaign
+        setTab('mine');
+      }
       await fetchDiscover({});
       await fetchMine();
     } catch (err) {
@@ -624,30 +636,27 @@ const CampaignsPage = () => {
                     {cardOwnerLabel(c, { tab, isCreatorRole: isCreator })}
                   </span>
                 </p>
-                {tab === 'discover' && (() => {
-                  const status = requestStatus[c._id] || 'idle';
-                  return (
-                    <div className="pt-3 border-t border-gray-100 mt-auto">
-                      <Button
-                        id={`request-collab-${c._id}`}
-                        type="button"
-                        size="sm"
-                        disabled={status === 'loading' || status === 'done'}
-                        onClick={() => handleRequestCollab(c._id)}
-                        className={`w-full inline-flex justify-center items-center gap-1.5 min-h-[44px] sm:min-h-[36px] transition-all
-                          ${status === 'done' ? 'opacity-60 cursor-not-allowed' : ''}`}
-                      >
-                        {status === 'loading' ? (
-                          <><Spinner size="sm" /> Sending…</>
-                        ) : status === 'done' ? (
-                          <><Handshake size={15} /> Requested</>  
-                        ) : (
-                          <><Handshake size={15} /> Request Collab</>
-                        )}
-                      </Button>
-                    </div>
-                  );
-                })()}
+                {tab === 'discover' && (
+                  <div className="pt-3 border-t border-gray-100 mt-auto">
+                    <Button
+                      id={`request-collab-${c._id}`}
+                      type="button"
+                      size="sm"
+                      disabled={requestStatus[c._id] === 'loading' || requestStatus[c._id] === 'done'}
+                      onClick={() => handleRequestCollab(c._id)}
+                      className={`w-full inline-flex justify-center items-center gap-1.5 min-h-[44px] sm:min-h-[36px] transition-all
+                        ${requestStatus[c._id] === 'done' ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    >
+                      {requestStatus[c._id] === 'loading' ? (
+                        <><Spinner size="sm" /> Sending…</>
+                      ) : requestStatus[c._id] === 'done' ? (
+                        <><Link2 size={15} /> Requested</>
+                      ) : (
+                        <><Link2 size={15} /> Request Collab</>
+                      )}
+                    </Button>
+                  </div>
+                )}
 
                 {tab === 'mine' && (
                   <div className="flex flex-col sm:flex-row gap-2 pt-3 border-t border-gray-100 mt-auto">
