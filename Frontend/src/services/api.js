@@ -78,6 +78,9 @@ export const collabAPI = {
 
 // Chat endpoints
 export const chatAPI = {
+  getMyChats: () => api.get('/chats/my-chats'),
+  getChatById: (chatId, page = 1, limit = 30) =>
+    api.get(`/chats/${chatId}`, { params: { page, limit } }),
   createDirectChat: (otherUserId) =>
     api.post(`/chats/create/${otherUserId}`),
   addDirectMessage: (chatId, content) =>
@@ -85,6 +88,7 @@ export const chatAPI = {
   addProjectMessage: (projectId, content) =>
     api.post(`/chats/project/${projectId}/message`, { content }),
 };
+
 
 // Review endpoints
 export const reviewAPI = {
