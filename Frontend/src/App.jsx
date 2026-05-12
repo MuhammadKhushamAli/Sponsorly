@@ -15,6 +15,7 @@ import CreatorsPage from './pages/CreatorsPage';
 import CreatorPublicProfilePage from './pages/CreatorPublicProfilePage';
 import SponsorsPage from './pages/SponsorsPage';
 import SponsorPublicProfilePage from './pages/SponsorPublicProfilePage';
+import CollabRequestsPage from './pages/CollabRequestsPage';
 
 // Layout
 import { MainLayout } from './components/Layout/Layout';
@@ -73,6 +74,16 @@ function App() {
               <ProtectedRoute>
                 <MainLayout>
                   <CampaignsPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/campaigns/:campaignId/requests"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <CollabRequestsPage />
                 </MainLayout>
               </ProtectedRoute>
             }
