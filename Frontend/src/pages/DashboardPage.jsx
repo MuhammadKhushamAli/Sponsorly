@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, Button, Spinner, Badge } from '../components/common/UIComponents';
 import { creatorAPI, sponsorAPI } from '../services/api';
 import { Award, TrendingUp, Users, BadgeCheck, Link2, BarChart3 } from 'lucide-react';
+import ReviewsSection from '../components/common/ReviewsSection';
 
 const DashboardPage = () => {
   const { user } = useSelector((state) => state.auth);
@@ -202,6 +203,20 @@ const DashboardPage = () => {
               </div>
             </div>
           )}
+        </Card>
+
+        {/* ── Reviews Received ── */}
+        <Card className="space-y-5">
+          <ReviewsSection
+            revieweeUserId={String(
+              dashboardData?.creator?.user?._id ||
+              dashboardData?.sponsor?.user?._id ||
+              user?.id ||
+              user?._id
+            )}
+            revieweeName={dashboardData?.name || user?.name || 'You'}
+            readOnly
+          />
         </Card>
       </div>
     </div>
