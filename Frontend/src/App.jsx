@@ -1,7 +1,9 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './redux/store';
+import { ToastProvider } from './context/ToastContext';
+
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -29,8 +31,10 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   return (
     <Provider store={store}>
-      <Router>
-        <Routes>
+      <ToastProvider>
+        <Router>
+          <Routes>
+
           {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
