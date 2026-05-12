@@ -47,7 +47,6 @@ export const getReviewsForUser = async (req, res) => {
   }
 };
 
-// ── GET /reviews/my-reviews  (auth) ─────────────────────────────────────────
 export const getMyReceivedReviews = async (req, res) => {
   try {
     const reviews = await Review.find({ revieweeId: req.user.id })
@@ -63,7 +62,6 @@ export const getMyReceivedReviews = async (req, res) => {
   }
 };
 
-// ── POST /reviews/:revieweeId ────────────────────────────────────────────────
 export const createReview = async (req, res) => {
   try {
     const { revieweeId } = req.params ?? {};
@@ -133,7 +131,6 @@ export const createReview = async (req, res) => {
   }
 };
 
-// ── DELETE /reviews/:reviewId ────────────────────────────────────────────────
 export const deleteReview = async (req, res) => {
   try {
     const { reviewId } = req.params ?? {};
