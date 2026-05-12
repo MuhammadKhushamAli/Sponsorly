@@ -118,14 +118,11 @@ export const sponsorCampaignSchema = {
 
 // ── Profile schemas ───────────────────────────────────────────────────────────
 export const creatorProfileSchema = {
-  bio:           [rules.required(), rules.minLen(20), rules.maxLen(500)],
-  niche:         [rules.minItems(1, 'Add at least one niche')],
-  followersCount:[rules.positiveInt()],
+  bio:           [rules.maxLen(500)],
 };
 
 export const sponsorProfileSchema = {
-  bio:        [rules.required(), rules.minLen(20), rules.maxLen(500)],
-  industries: [rules.minItems(1, 'Add at least one industry')],
+  bio:        [rules.maxLen(500)],
 };
 
 // ── Auth schemas ──────────────────────────────────────────────────────────────
