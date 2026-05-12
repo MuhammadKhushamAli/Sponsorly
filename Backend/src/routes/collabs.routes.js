@@ -9,7 +9,7 @@ import {
 	acceptCreatorRequestAsSponsor,
 	rejectCreatorRequestAsSponsor,
 } from "../controllers/collabs.controller.js";
-import { verifyToken } from "../middlewares/verifyToken.js";
+import { verifyToken } from "../middlewares/verifytoken.js";
 
 const router = express.Router();
 

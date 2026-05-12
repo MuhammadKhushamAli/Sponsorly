@@ -1,6 +1,6 @@
 import express from "express";
 import { findCreatorCampaigns, createCreatorCampaign, updateCreatorCampaign, deleteCreatorCampaign } from "../controllers/creatorCampaign.controller.js";
-import { verifyToken } from "../middlewares/verifyToken.js";
+import { verifyToken } from "../middlewares/verifytoken.js";
 
 const router = express.Router();
 

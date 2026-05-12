@@ -1,6 +1,6 @@
 import express from "express";
 import { findSponsorCampaigns, createSponsorCampaign, updateSponsorCampaign, deleteSponsorCampaign } from "../controllers/sponsorCampaign.controller.js";
-import { verifyToken } from "../middlewares/verifyToken.js";
+import { verifyToken } from "../middlewares/verifytoken.js";
 
 const router = express.Router();
 
