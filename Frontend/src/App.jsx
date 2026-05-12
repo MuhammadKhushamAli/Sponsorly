@@ -12,6 +12,9 @@ import CampaignsPage from './pages/CampaignsPage';
 import ChatPage from './pages/ChatPage';
 import ProfilePage from './pages/ProfilePage';
 import CreatorsPage from './pages/CreatorsPage';
+import CreatorPublicProfilePage from './pages/CreatorPublicProfilePage';
+import SponsorsPage from './pages/SponsorsPage';
+import SponsorPublicProfilePage from './pages/SponsorPublicProfilePage';
 
 // Layout
 import { MainLayout } from './components/Layout/Layout';
@@ -33,7 +36,25 @@ function App() {
           <Route path="/signup" element={<SignUpPage />} />
 
           {/* Public Routes */}
+          <Route path="/creators/:creatorId" element={<CreatorPublicProfilePage />} />
           <Route path="/creators" element={<CreatorsPage />} />
+
+          <Route
+            path="/sponsors"
+            element={
+              <ProtectedRoute>
+                <SponsorsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sponsors/:sponsorId"
+            element={
+              <ProtectedRoute>
+                <SponsorPublicProfilePage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Protected Routes */}
           <Route

@@ -41,6 +41,16 @@ export const Navbar = () => {
                 <Link to="/profile" className="text-gray-600 hover:text-primary-600 font-medium">
                   Profile
                 </Link>
+                {user?.role === 'creator' && (
+                  <Link to="/sponsors" className="text-gray-600 hover:text-primary-600 font-medium">
+                    Find sponsors
+                  </Link>
+                )}
+                {user?.role === 'sponsor' && (
+                  <Link to="/creators" className="text-gray-600 hover:text-primary-600 font-medium">
+                    Discover creators
+                  </Link>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -88,6 +98,16 @@ export const Navbar = () => {
                 <Link to="/profile" className="block py-2 text-gray-600 hover:text-primary-600">
                   Profile
                 </Link>
+                {user?.role === 'creator' && (
+                  <Link to="/sponsors" className="block py-2 text-gray-600 hover:text-primary-600">
+                    Find sponsors
+                  </Link>
+                )}
+                {user?.role === 'sponsor' && (
+                  <Link to="/creators" className="block py-2 text-gray-600 hover:text-primary-600">
+                    Discover creators
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   className="block w-full text-left py-2 text-gray-600 hover:text-primary-600"

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { Card, Button, Spinner, Badge } from '../components/common/UIComponents';
 import { creatorAPI, sponsorAPI } from '../services/api';
 import { Award, TrendingUp, Users, BadgeCheck, Link2, BarChart3 } from 'lucide-react';
 
 const DashboardPage = () => {
-  const { user } = useSelector(state => state.auth);
+  const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -103,11 +105,31 @@ const DashboardPage = () => {
               {isCreator ? 'Your creator dashboard reflects your creator profile data.' : 'Your sponsor dashboard reflects your sponsor profile data.'}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary" className="bg-white/15 text-white border-white/20">{role || 'account'}</Badge>
-            <Badge variant="secondary" className="bg-white/15 text-white border-white/20">
-              {dashboardData?.profileCompleted ? 'Profile complete' : 'Profile incomplete'}
-            </Badge>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            {isCreator && (
+              <Button
+                variant="outline"
+                className="bg-white/10 border-white/40 text-white hover:bg-white/20"
+                onClick={() => navigate('/sponsors')}
+              >
+                Find sponsors
+              </Button>
+            )}
+            {isSponsor && (
+              <Button
+                variant="outline"
+                className="bg-white/10 border-white/40 text-white hover:bg-white/20"
+                onClick={() => navigate('/creators')}
+              >
+                Discover creators
+              </Button>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="secondary" className="bg-white/15 text-white border-white/20">{role || 'account'}</Badge>
+              <Badge variant="secondary" className="bg-white/15 text-white border-white/20">
+                {dashboardData?.profileCompleted ? 'Profile complete' : 'Profile incomplete'}
+              </Badge>
+            </div>
           </div>
         </div>
       </div>

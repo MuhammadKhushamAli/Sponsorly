@@ -99,12 +99,17 @@ export const creatorAPI = {
   dashboard: () => api.get('/creators/dashboard'),
   updateProfile: (data) => api.post('/creators/update-profile', data),
   getCreators: (params) => api.get('/creators', { params }),
+  /** Public creator profile (falls back to list + cache on older APIs). */
+  getById: (id) => api.get(`/creators/${id}`),
 };
 
 export const sponsorAPI = {
   dashboard: () => api.get('/sponsors/dashboard'),
   updateProfile: (data) => api.post('/sponsors/update-profile', data),
-  findSponsors: (tags) => api.get(`/sponsors/industries/${tags}`),
+  /** Comma-separated industries, e.g. "tech,finance" (matches getSponsorsByIndustries). */
+  findSponsors: (industriesCsv) =>
+    api.get(`/sponsors/industries/${encodeURIComponent(industriesCsv)}`),
+  getById: (sponsorId) => api.get(`/sponsors/profile/${sponsorId}`),
 };
 
 export default api;
