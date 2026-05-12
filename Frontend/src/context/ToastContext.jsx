@@ -22,7 +22,7 @@ const ICONS = {
   success: <CheckCircle size={18} className="text-green-500 shrink-0" />,
   error:   <XCircle    size={18} className="text-red-500 shrink-0" />,
   warning: <AlertTriangle size={18} className="text-yellow-500 shrink-0" />,
-  info:    <Info       size={18} className="text-blue-500 shrink-0" />,
+  info:    <Info       size={18} className="text-primary-600 shrink-0" />,
 };
 
 const BORDERS = {
@@ -36,7 +36,7 @@ const PROGRESS_COLORS = {
   success: 'bg-green-500',
   error:   'bg-red-500',
   warning: 'bg-yellow-500',
-  info:    'bg-blue-500',
+  info:    'bg-primary-600',
 };
 
 function ToastItem({ toast, onRemove }) {

@@ -32,12 +32,12 @@ const platformIcon = (platform = '') => {
 
 const platformColor = (platform = '') => {
   const p = platform.toLowerCase();
-  if (p.includes('twitter') || p.includes('x')) return 'bg-sky-500';
+  if (p.includes('twitter') || p.includes('x')) return 'bg-gray-800';
   if (p.includes('youtube')) return 'bg-red-500';
   if (p.includes('instagram')) return 'bg-gradient-to-br from-pink-500 to-orange-400';
-  if (p.includes('tiktok')) return 'bg-black';
-  if (p.includes('linkedin')) return 'bg-blue-600';
-  return 'bg-gray-600';
+  if (p.includes('tiktok')) return 'bg-gray-900';
+  if (p.includes('linkedin')) return 'bg-primary-600';
+  return 'bg-primary-700';
 };
 
 const CreatorPublicProfilePage = () => {
