@@ -10,4 +10,4 @@ router.get("/dashboard", verifyToken, sponsorDashboard);
 router.get("/activity", verifyToken, getSponsorActivity);
 router.post("/update-profile", verifyToken, upload.single("profileImage"), updateSponsorProfile);
 
-export default router;
+export default router;
