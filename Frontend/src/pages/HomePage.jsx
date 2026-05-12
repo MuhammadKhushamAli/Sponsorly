@@ -91,14 +91,6 @@ const HomePage = () => {
                   >
                     Get Started <ArrowRight size={20} />
                   </Button>
-
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={() => navigate('/login')}
-                  >
-                    Login to Account
-                  </Button>
                 </>
               )}
             </div>
