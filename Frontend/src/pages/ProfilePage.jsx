@@ -289,18 +289,10 @@ const ProfilePage = () => {
                     <label className="text-sm font-medium text-gray-700 mb-2 block">
                       Follower count
                     </label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={formData.followersCount}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          followersCount: parseInt(e.target.value, 10) || 0,
-                        }))
-                      }
-                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
-                    />
+                    <p className="px-4 py-2 bg-gray-100 border-2 border-gray-200 rounded-lg text-gray-500 cursor-not-allowed">
+                      {formData.followersCount}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">Follower count cannot be edited manually.</p>
                   </div>
 
                   <div>
