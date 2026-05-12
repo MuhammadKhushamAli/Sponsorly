@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Menu, X, LogOut, User, Home, MessageSquare, Award } from 'lucide-react';
 import { logout } from "../../redux/slices/authSlice";
 import { Button } from "../common/UIComponents";
+import AIChatBubble from '../common/AIChatBubble';
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -192,6 +193,9 @@ export const MainLayout = ({ children }) => {
           </div>
         </main>
       </div>
+      {/* AI Assistant floating bubble – visible on all authenticated pages */}
+      <AIChatBubble />
     </div>
   );
 };
+

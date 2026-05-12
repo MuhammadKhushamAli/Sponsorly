@@ -112,4 +112,11 @@ export const sponsorAPI = {
   getById: (sponsorId) => api.get(`/sponsors/profile/${sponsorId}`),
 };
 
+// AI Agent endpoints
+export const agentAPI = {
+  sendMessage: (message) => api.post('/agent/chat', { message }),
+  clearHistory: () => api.delete('/agent/history'),
+};
+
 export default api;
+

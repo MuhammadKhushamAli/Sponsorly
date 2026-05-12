@@ -4,6 +4,7 @@ import campaignReducer from './slices/campaignSlice';
 import chatReducer from './slices/chatSlice';
 import collabReducer from './slices/collabSlice';
 import reviewReducer from './slices/reviewSlice';
+import agentReducer from './slices/agentSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     chats: chatReducer,
     collabs: collabReducer,
     reviews: reviewReducer,
+    agent: agentReducer,
   },
 });
 
