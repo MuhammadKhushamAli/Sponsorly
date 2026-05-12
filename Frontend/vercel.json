@@ -36,10 +36,6 @@
     {
       "source": "/agent/(.*)",
       "destination": "https://sponsorly-1.onrender.com/agent/$1"
-    },
-    {
-      "source": "/((?!api|auth|sponsors|creators|collabs|chats|reviews|agent|.*\\.).*)",
-      "destination": "/index.html"
     }
   ]
 }
