@@ -14,10 +14,10 @@ export const Button = ({
 
   const variants = {
     primary:   'bg-gradient-brand text-white hover:shadow-brand focus:ring-primary-500',
-    secondary: 'bg-secondary-500 text-white hover:bg-secondary-600 focus:ring-secondary-500',
-    outline:   'border-2 border-primary-500 text-primary-600 hover:bg-primary-50 focus:ring-primary-500',
-    ghost:     'text-primary-600 hover:bg-primary-50 focus:ring-primary-500',
-    danger:    'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500',
+    secondary: 'bg-secondary-500 text-white hover:bg-secondary-600 focus:ring-secondary-400',
+    outline:   'border-2 border-primary-500 text-primary-600 hover:bg-primary-50 focus:ring-primary-400',
+    ghost:     'text-primary-600 hover:bg-primary-50 focus:ring-primary-400',
+    danger:    'bg-red-500 text-white hover:bg-red-600 focus:ring-red-400',
   };
 
   const sizes = {
