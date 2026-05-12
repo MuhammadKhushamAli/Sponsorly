@@ -129,14 +129,12 @@ export const updateCreatorProfile = async (req, res) => {
     const creator = await Creator.findOne({ user: userId });
 
     if (!user) {
-      if (file) 
-        await fs.unlink(file.path);
+      if (file) await fs.unlink(file.path);
       return res.status(404).json({ message: "User not found" });
     }
 
     if (!creator) {
-        if(file) 
-            await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
+      if (file) await fs.unlink(file.path);
       return res.status(404).json({ message: "Creator not found" });
     }
 
@@ -145,10 +143,8 @@ export const updateCreatorProfile = async (req, res) => {
     // ---------------- IMAGE ----------------
     if (file) {
       const uploadRes = await imageUpload(file.path);
-
       user.profilePicture_url = uploadRes.secure_url;
       user.profilePicture_id = uploadRes.public_id;
-
       isChanged = true;
     }
 
@@ -160,9 +156,23 @@ export const updateCreatorProfile = async (req, res) => {
 
     // ---------------- NICHES ----------------
     if (niche !== undefined) {
-      creator.niche = niche;
+      let parsedNiches;
+
+      try {
+        parsedNiches = JSON.parse(niche);
+      } catch {
+        if (file) await fs.unlink(file.path);
+        return res.status(400).json({ message: "niche must be valid JSON array string" });
+      }
+
+      if (!Array.isArray(parsedNiches) || parsedNiches.length === 0) {
+        if (file) await fs.unlink(file.path);
+        return res.status(400).json({ message: "Niche cannot be empty" });
+      }
+
+      creator.niche = parsedNiches;
       isChanged = true;
-    }
+    } // ✅ closing brace for `if (niche !== undefined)` was missing here
 
     // ---------------- LINKS ----------------
     if (links !== undefined) {
@@ -171,16 +181,12 @@ export const updateCreatorProfile = async (req, res) => {
       try {
         parsedLinks = JSON.parse(links);
       } catch {
-        if(file) 
-            await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
-        return res.status(400).json({
-          message: "Links must be valid JSON array string",
-        });
+        if (file) await fs.unlink(file.path);
+        return res.status(400).json({ message: "Links must be valid JSON array string" });
       }
 
       if (!Array.isArray(parsedLinks) || parsedLinks.length === 0) {
-        if(file) 
-            await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
+        if (file) await fs.unlink(file.path);
         return res.status(400).json({ message: "Links cannot be empty" });
       }
 
@@ -193,11 +199,8 @@ export const updateCreatorProfile = async (req, res) => {
       const parsed = Number(followersCount);
 
       if (isNaN(parsed) || parsed < 0) {
-        if(file) 
-            await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
-        return res.status(400).json({
-          message: "Invalid followers count",
-        });
+        if (file) await fs.unlink(file.path);
+        return res.status(400).json({ message: "Invalid followers count" });
       }
 
       creator.followersCount = parsed;
@@ -206,11 +209,8 @@ export const updateCreatorProfile = async (req, res) => {
 
     // ---------------- MUST CHANGE CHECK ----------------
     if (!isChanged) {
-        if(file) 
-            await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
-      return res.status(400).json({
-        message: "At least one field must be updated",
-      });
+      if (file) await fs.unlink(file.path);
+      return res.status(400).json({ message: "At least one field must be updated" });
     }
 
     // ---------------- PROFILE COMPLETION LOGIC ----------------
@@ -224,8 +224,7 @@ export const updateCreatorProfile = async (req, res) => {
 
     await user.save();
     await creator.save();
-    if(file) 
-        await fs.unlink(file.path); // delete uploaded file if creator profile doesn't exist
+    if (file) await fs.unlink(file.path);
 
     res.status(200).json({
       message: "Profile saved successfully",
@@ -240,4 +239,4 @@ export const updateCreatorProfile = async (req, res) => {
       error: error.message,
     });
   }
-};
+}; 
