@@ -1,9 +1,65 @@
 import { User } from "../models/User.model.js";
 import { Creator } from "../models/Creator.model.js";
 import { Sponsor } from "../models/Sponsor.model.js";
+import { SponsorCampaign } from "../models/SponsorCampaign.model.js";
+import { CreatorRequestCollab } from "../models/CreatorRequestCollab.model.js";
+import { SponsorRequestCollab } from "../models/SponsorRequestCollab.model.js";
+import { Project } from "../models/Project.model.js";
+import { Chat } from "../models/Chat.model.js";
 import { imageUpload } from "../utils/uploadHandlers.utils.js";
 import fs from "fs/promises";
 import mongoose from "mongoose";
+
+export const getSponsorActivity = async (req, res) => {
+  try {
+    const sponsor = await Sponsor.findOne({ user: req.user.id });
+    if (!sponsor) return res.status(404).json({ message: "Sponsor profile not found" });
+
+    // 1. Projects
+    const projects = await Project.find({ _id: { $in: sponsor.previousProjects || [] } })
+      .sort({ updatedAt: -1 })
+      .limit(10);
+
+    // 2. Collab requests sent by this sponsor
+    const sentRequests = await SponsorRequestCollab.find({ sponsorId: sponsor._id })
+      .populate({ path: "creatorCampaignId", select: "title budget" })
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    // 3. Requests received on sponsor campaigns (creators requesting collaboration)
+    const mySponsorCampaigns = await SponsorCampaign.find({ sponsorId: sponsor._id }).select("_id title");
+    const campaignIds = mySponsorCampaigns.map(c => c._id);
+    const receivedRequests = await CreatorRequestCollab.find({ sponsorCampaignId: { $in: campaignIds } })
+      .populate({ path: "sponsorCampaignId", select: "title" })
+      .populate({ path: "creatorId", populate: { path: "user", select: "name profilePicture_url" } })
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    // 4. Recent chats
+    const chats = await Chat.find({ _id: { $in: (sponsor.chats || []) } })
+      .select("messages createdAt updatedAt projectChat")
+      .sort({ updatedAt: -1 })
+      .limit(5);
+
+    // 5. Analytics
+    const stats = {
+      totalProjects: sponsor.previousProjects?.length || 0,
+      workingProjects: projects.filter(p => p.status === "working").length,
+      completedProjects: projects.filter(p => p.status === "completed").length,
+      cancelledProjects: projects.filter(p => p.status === "cancelled").length,
+      pendingSent: sentRequests.filter(r => r.status === "pending").length,
+      acceptedSent: sentRequests.filter(r => r.status === "accepted").length,
+      pendingReceived: receivedRequests.filter(r => r.status === "pending").length,
+      totalChats: (sponsor.chats || []).length,
+    };
+
+    return res.status(200).json({ projects, sentRequests, receivedRequests, recentChats: chats, stats });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
 
 export const getSponsorsByIndustries = async (req, res) => {
   try {

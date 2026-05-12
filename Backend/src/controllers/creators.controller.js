@@ -2,9 +2,64 @@ import { User } from "../models/User.model.js";
 import { Creator } from "../models/Creator.model.js";
 import { Sponsor } from "../models/Sponsor.model.js";
 import { CreatorCampaign } from "../models/CreatorCampaign.model.js";
+import { CreatorRequestCollab } from "../models/CreatorRequestCollab.model.js";
+import { SponsorRequestCollab } from "../models/SponsorRequestCollab.model.js";
+import { Project } from "../models/Project.model.js";
+import { Chat } from "../models/Chat.model.js";
 import { imageUpload } from "../utils/uploadHandlers.utils.js";
 import fs from "fs/promises";
 import mongoose from "mongoose";
+
+export const getCreatorActivity = async (req, res) => {
+  try {
+    const creator = await Creator.findOne({ user: req.user.id });
+    if (!creator) return res.status(404).json({ message: "Creator profile not found" });
+
+    // 1. Projects with full data
+    const projects = await Project.find({ _id: { $in: creator.previousProjects || [] } })
+      .sort({ updatedAt: -1 })
+      .limit(10);
+
+    // 2. Collab requests sent by this creator
+    const sentRequests = await CreatorRequestCollab.find({ creatorId: creator._id })
+      .populate({ path: "sponsorCampaignId", select: "title budget" })
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    // 3. Collab requests received (sponsors requesting this creator's campaigns)
+    const myCreatorCampaigns = await CreatorCampaign.find({ creatorId: creator._id }).select("_id title");
+    const campaignIds = myCreatorCampaigns.map(c => c._id);
+    const receivedRequests = await SponsorRequestCollab.find({ creatorCampaignId: { $in: campaignIds } })
+      .populate({ path: "creatorCampaignId", select: "title" })
+      .populate({ path: "sponsorId", populate: { path: "user", select: "name profilePicture_url" } })
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    // 4. Recent chats (message count)
+    const chats = await Chat.find({ _id: { $in: (creator.chats || []) } })
+      .select("messages createdAt updatedAt projectChat")
+      .sort({ updatedAt: -1 })
+      .limit(5);
+
+    // 5. Analytics summary
+    const stats = {
+      totalProjects: creator.previousProjects?.length || 0,
+      workingProjects: projects.filter(p => p.status === "working").length,
+      completedProjects: projects.filter(p => p.status === "completed").length,
+      cancelledProjects: projects.filter(p => p.status === "cancelled").length,
+      pendingSent: sentRequests.filter(r => r.status === "pending").length,
+      acceptedSent: sentRequests.filter(r => r.status === "accepted").length,
+      pendingReceived: receivedRequests.filter(r => r.status === "pending").length,
+      totalChats: (creator.chats || []).length,
+    };
+
+    return res.status(200).json({ projects, sentRequests, receivedRequests, recentChats: chats, stats });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
 
 export const getCreators = async (req, res) => {
   try {
