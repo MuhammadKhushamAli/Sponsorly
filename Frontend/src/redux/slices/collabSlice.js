@@ -5,8 +5,10 @@ const initialState = {
   currentRequest: null,
   isLoading: false,
   error: null,
+  // Toast shown when a collab is accepted and a project is created
+  projectToast: null, // { projectId, campaignTitle }
   filter: {
-    status: 'pending', // pending, accepted, rejected
+    status: 'all', // all | pending | accepted | rejected
   },
 };
 
@@ -21,10 +23,18 @@ const collabSlice = createSlice({
       state.currentRequest = action.payload;
     },
     updateRequest: (state, action) => {
-      const index = state.requests.findIndex(r => r._id === action.payload._id);
+      const index = state.requests.findIndex((r) => r._id === action.payload._id);
       if (index !== -1) {
         state.requests[index] = action.payload;
       }
+    },
+    removeRequest: (state, action) => {
+      state.requests = state.requests.filter((r) => r._id !== action.payload);
+    },
+    clearAll: (state) => {
+      state.requests = [];
+      state.currentRequest = null;
+      state.error = null;
     },
     setLoading: (state, action) => {
       state.isLoading = action.payload;
@@ -32,19 +42,30 @@ const collabSlice = createSlice({
     setError: (state, action) => {
       state.error = action.payload;
     },
+    clearError: (state) => {
+      state.error = null;
+    },
     setFilter: (state, action) => {
       state.filter = { ...state.filter, ...action.payload };
+    },
+    setProjectToast: (state, action) => {
+      state.projectToast = action.payload; // { projectId, campaignTitle } | null
     },
   },
 });
 
-export const { 
-  setRequests, 
+export const {
+  setRequests,
   setCurrentRequest,
   updateRequest,
+  removeRequest,
+  clearAll,
   setLoading,
   setError,
+  clearError,
   setFilter,
+  setProjectToast,
 } = collabSlice.actions;
 
 export default collabSlice.reducer;
+
