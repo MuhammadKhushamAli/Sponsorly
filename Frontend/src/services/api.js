@@ -92,11 +92,12 @@ export const chatAPI = {
 
 // Review endpoints
 export const reviewAPI = {
-  create: (revieweeId, data) =>
-    api.post(`/reviews/${revieweeId}`, data),
-  delete: (reviewId) =>
-    api.delete(`/reviews/${reviewId}`),
+  getForUser: (userId) => api.get(`/reviews/user/${userId}`),
+  getMyReceived: () => api.get('/reviews/my-reviews'),
+  create: (revieweeId, data) => api.post(`/reviews/${revieweeId}`, data),
+  delete: (reviewId) => api.delete(`/reviews/${reviewId}`),
 };
+
 
 // Creator/Sponsor profile endpoints
 export const creatorAPI = {

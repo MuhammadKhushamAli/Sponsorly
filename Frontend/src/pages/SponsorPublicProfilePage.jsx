@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { Navbar } from '../components/Layout/Layout';
 import { Card, Button, Badge, Spinner } from '../components/common/UIComponents';
 import { sponsorAPI } from '../services/api';
 import { ArrowLeft, Star, Building2 } from 'lucide-react';
 import { readCachedSponsor, stashSponsorProfile } from '../utils/publicProfileCache';
+import ReviewsSection from '../components/common/ReviewsSection';
 
 const formatRating = (value) => {
   if (value === null || value === undefined || value === '') return '0.0';
@@ -15,6 +17,7 @@ const formatRating = (value) => {
 const SponsorPublicProfilePage = () => {
   const { sponsorId } = useParams();
   const navigate = useNavigate();
+  const { user: authUser } = useSelector((s) => s.auth);
   const [sponsor, setSponsor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -156,6 +159,18 @@ const SponsorPublicProfilePage = () => {
                     ) : (
                       <p className="text-sm text-gray-500">None listed</p>
                     )}
+                  </div>
+                  {/* ── Reviews Section ── */}
+                  <div className="border-t border-gray-100 pt-6">
+                    <ReviewsSection
+                      revieweeUserId={String(sponsor?.user?._id || sponsor?.user)}
+                      revieweeName={name}
+                      canReview={
+                        !!authUser &&
+                        authUser.role === 'creator' &&
+                        String(authUser.id || authUser._id) !== String(sponsor?.user?._id || sponsor?.user)
+                      }
+                    />
                   </div>
                 </div>
               </Card>
