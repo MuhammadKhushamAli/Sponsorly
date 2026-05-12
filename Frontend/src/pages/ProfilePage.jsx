@@ -18,6 +18,7 @@ const ProfilePage = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const nicheInputRef = useRef(null);
   const industryInputRef = useRef(null);
   const [formData, setFormData] = useState({
@@ -108,6 +109,7 @@ const ProfilePage = () => {
   const handleCancel = () => {
     setEditMode(false);
     setFieldErrors({});
+    setSaveError('');
     resetFormFromProfile();
   };
 
@@ -188,6 +190,7 @@ const ProfilePage = () => {
       toast.success('Profile saved successfully! ✓');
     } catch (err) {
       const msg = err.response?.data?.message || 'Failed to save profile. Please try again.';
+      setSaveError(msg);
       toast.error(msg);
     } finally {
       setSaving(false);
