@@ -112,10 +112,12 @@ function App() {
               </ProtectedRoute>
             }
           />
-        </Routes>
-      </Router>
+          </Routes>
+        </Router>
+      </ToastProvider>
     </Provider>
   );
 }
+
 
 export default App;
