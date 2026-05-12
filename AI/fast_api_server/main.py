@@ -17,4 +17,5 @@ def main():
     except Exception as e:
         print(f"Exception occured: {e}")
 
-main()
+if __name__ == "__main__":
+    main()
