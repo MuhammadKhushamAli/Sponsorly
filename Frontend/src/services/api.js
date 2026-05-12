@@ -102,6 +102,7 @@ export const reviewAPI = {
 // Creator/Sponsor profile endpoints
 export const creatorAPI = {
   dashboard: () => api.get('/creators/dashboard'),
+  activity: () => api.get('/creators/activity'),
   updateProfile: (data) => api.post('/creators/update-profile', data),
   getCreators: (params) => api.get('/creators', { params }),
   /** Public creator profile (falls back to list + cache on older APIs). */
@@ -110,6 +111,7 @@ export const creatorAPI = {
 
 export const sponsorAPI = {
   dashboard: () => api.get('/sponsors/dashboard'),
+  activity: () => api.get('/sponsors/activity'),
   updateProfile: (data) => api.post('/sponsors/update-profile', data),
   /** Comma-separated industries, e.g. "tech,finance" (matches getSponsorsByIndustries). */
   findSponsors: (industriesCsv) =>
