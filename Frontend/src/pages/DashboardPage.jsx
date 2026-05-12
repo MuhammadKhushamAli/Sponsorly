@@ -77,17 +77,41 @@ const DonutChart = ({ segments, size = 80 }) => {
 };
 
 // ── Mini bar chart (pure CSS) ─────────────────────────────────────────────────
-const BarChart = ({ bars, maxH = 64 }) => {
+const BarChart = ({ bars }) => {
+  const MAX_H = 56; // px — max bar height
   const max = Math.max(...bars.map(b => b.value), 1);
   return (
-    <div className="flex items-end gap-2 h-16">
-      {bars.map((b, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center gap-1">
-          <div className="w-full rounded-t-lg transition-all duration-700"
-            style={{ height: `${(b.value / max) * maxH}px`, background: b.color, minHeight: '4px' }} />
-          <span className="text-[9px] text-gray-400 truncate max-w-full">{b.label}</span>
-        </div>
-      ))}
+    <div className="w-full">
+      {/* Bar area — fixed height so bars never escape this box */}
+      <div
+        className="flex items-end gap-2"
+        style={{ height: `${MAX_H}px` }}
+      >
+        {bars.map((b, i) => (
+          <div key={i} className="flex-1 flex flex-col justify-end">
+            <div
+              className="w-full rounded-t-md transition-all duration-700"
+              style={{
+                height: `${Math.max((b.value / max) * MAX_H, 3)}px`,
+                background: b.color,
+              }}
+            />
+          </div>
+        ))}
+      </div>
+      {/* Labels row — always below bars, never overlapping */}
+      <div className="flex gap-2 mt-1.5">
+        {bars.map((b, i) => (
+          <div key={i} className="flex-1 text-center">
+            <span className="text-[9px] text-gray-400 font-medium leading-tight block truncate">
+              {b.label}
+            </span>
+            <span className="text-[10px] font-bold text-gray-700 block">
+              {b.value}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
@@ -412,9 +436,9 @@ const DashboardPage = () => {
                 </div>
               </div>
 
-              {/* Request bar chart */}
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Collab Requests</p>
+              {/* Request bar chart — separated from donut by a clear section */}
+              <div className="border-t border-gray-100 pt-4 mt-2">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Collab Requests</p>
                 <BarChart bars={[
                   { value: stats.pendingReceived ?? 0, label: 'Incoming', color: '#f97316' },
                   { value: stats.pendingSent ?? 0, label: 'Sent', color: '#8a5f41' },
