@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { Card, Button, Badge, Spinner } from '../components/common/UIComponents';
 import {
   Megaphone,
@@ -9,8 +10,10 @@ import {
   X,
   Search,
   RefreshCw,
+  Handshake,
+  Users,
 } from 'lucide-react';
-import { creatorCampaignAPI, sponsorCampaignAPI } from '../services/api';
+import { creatorCampaignAPI, sponsorCampaignAPI, collabAPI } from '../services/api';
 
 const emptyForm = () => ({
   title: '',
@@ -76,9 +79,13 @@ const cardPriceBadge = (c) => {
 
 const CampaignsPage = () => {
   const { user } = useSelector((s) => s.auth);
+  const navigate = useNavigate();
   const role = user?.role;
   const isCreator = role === 'creator';
   const isSponsor = role === 'sponsor';
+
+  // Track per-campaign request status { [campaignId]: 'idle'|'loading'|'done'|'error' }
+  const [requestStatus, setRequestStatus] = useState({});
 
   /** Own listings + CRUD */
   const myCampaignApi = isCreator ? creatorCampaignAPI : sponsorCampaignAPI;
@@ -333,6 +340,30 @@ const CampaignsPage = () => {
       await fetchMine();
     } catch (e) {
       setError(e.response?.data?.message || 'Delete failed.');
+    }
+  };
+
+  const handleRequestCollab = async (campaignId) => {
+    setRequestStatus((prev) => ({ ...prev, [campaignId]: 'loading' }));
+    try {
+      // Creator requests to join a sponsor campaign; Sponsor requests to join a creator campaign
+      if (isCreator) {
+        await collabAPI.creatorRequests(campaignId);
+      } else {
+        await collabAPI.sponsorRequests(campaignId);
+      }
+      setRequestStatus((prev) => ({ ...prev, [campaignId]: 'done' }));
+      setBanner('Collaboration request sent! The campaign owner will review it.');
+    } catch (e) {
+      const msg = e.response?.data?.message || '';
+      // Already requested — treat as soft-done
+      if (msg.toLowerCase().includes('already')) {
+        setRequestStatus((prev) => ({ ...prev, [campaignId]: 'done' }));
+        setBanner('You have already sent a request for this campaign.');
+      } else {
+        setRequestStatus((prev) => ({ ...prev, [campaignId]: 'error' }));
+        setError(msg || 'Failed to send collaboration request.');
+      }
     }
   };
 
@@ -593,13 +624,47 @@ const CampaignsPage = () => {
                     {cardOwnerLabel(c, { tab, isCreatorRole: isCreator })}
                   </span>
                 </p>
+                {tab === 'discover' && (() => {
+                  const status = requestStatus[c._id] || 'idle';
+                  return (
+                    <div className="pt-3 border-t border-gray-100 mt-auto">
+                      <Button
+                        id={`request-collab-${c._id}`}
+                        type="button"
+                        size="sm"
+                        disabled={status === 'loading' || status === 'done'}
+                        onClick={() => handleRequestCollab(c._id)}
+                        className={`w-full inline-flex justify-center items-center gap-1.5 min-h-[44px] sm:min-h-[36px] transition-all
+                          ${status === 'done' ? 'opacity-60 cursor-not-allowed' : ''}`}
+                      >
+                        {status === 'loading' ? (
+                          <><Spinner size="sm" /> Sending…</>
+                        ) : status === 'done' ? (
+                          <><Handshake size={15} /> Requested</>  
+                        ) : (
+                          <><Handshake size={15} /> Request Collab</>
+                        )}
+                      </Button>
+                    </div>
+                  );
+                })()}
+
                 {tab === 'mine' && (
                   <div className="flex flex-col sm:flex-row gap-2 pt-3 border-t border-gray-100 mt-auto">
+                    <Button
+                      id={`view-requests-${c._id}`}
+                      type="button"
+                      size="sm"
+                      className="flex-1 inline-flex justify-center items-center gap-1 min-h-[44px] sm:min-h-[36px]"
+                      onClick={() => navigate(`/campaigns/${c._id}/requests`)}
+                    >
+                      <Users size={15} /> View Requests
+                    </Button>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="flex-1 inline-flex justify-center items-center gap-1 min-h-[44px] sm:min-h-0"
+                      className="flex-1 inline-flex justify-center items-center gap-1 min-h-[44px] sm:min-h-[36px]"
                       onClick={() => openEdit(c)}
                     >
                       <Pencil size={16} /> Edit
@@ -608,7 +673,7 @@ const CampaignsPage = () => {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="flex-1 text-error border-gray-300 hover:bg-gray-50 inline-flex justify-center items-center gap-1 min-h-[44px] sm:min-h-0"
+                      className="flex-1 text-error border-gray-300 hover:bg-gray-50 inline-flex justify-center items-center gap-1 min-h-[44px] sm:min-h-[36px]"
                       onClick={() => handleDelete(c._id)}
                     >
                       <Trash2 size={16} /> Delete
