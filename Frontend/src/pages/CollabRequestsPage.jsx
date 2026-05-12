@@ -188,11 +188,11 @@ const CollabRequestsPage = () => {
     dispatch(setLoading(true));
     dispatch(setError(null));
     try {
-      // Creator owns the campaign → sponsor requests came in  (getSponsorRequests)
-      // Sponsor owns the campaign → creator requests came in  (getCreatorRequests)
+      // Creator owns the campaign → use creator endpoint (returns sponsor requests)
+      // Sponsor owns the campaign → use sponsor endpoint (returns creator requests)
       const res = isCreator
-        ? await collabAPI.getSponsorRequests(campaignId)
-        : await collabAPI.getCreatorRequests(campaignId);
+        ? await collabAPI.getCreatorRequests(campaignId)
+        : await collabAPI.getSponsorRequests(campaignId);
 
       const data = res.data;
       setCampaignTitle(data.campaign?.title || '');
