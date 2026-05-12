@@ -1,43 +1,44 @@
 {
+  "version": 2,
   "rewrites": [
     {
-      "source": "/auth/:path*",
-      "destination": "https://sponsorly-1.onrender.com/auth/:path*"
+      "source": "/auth/(.*)",
+      "destination": "https://sponsorly-1.onrender.com/auth/$1"
     },
     {
-      "source": "/sponsors/:path*",
-      "destination": "https://sponsorly-1.onrender.com/sponsors/:path*"
+      "source": "/sponsors/(.*)",
+      "destination": "https://sponsorly-1.onrender.com/sponsors/$1"
     },
     {
-      "source": "/creators/:path*",
-      "destination": "https://sponsorly-1.onrender.com/creators/:path*"
+      "source": "/creators/(.*)",
+      "destination": "https://sponsorly-1.onrender.com/creators/$1"
     },
     {
-      "source": "/creator-campaigns/:path*",
-      "destination": "https://sponsorly-1.onrender.com/creator-campaigns/:path*"
+      "source": "/creator-campaigns/(.*)",
+      "destination": "https://sponsorly-1.onrender.com/creator-campaigns/$1"
     },
     {
-      "source": "/sponsor-campaigns/:path*",
-      "destination": "https://sponsorly-1.onrender.com/sponsor-campaigns/:path*"
+      "source": "/sponsor-campaigns/(.*)",
+      "destination": "https://sponsorly-1.onrender.com/sponsor-campaigns/$1"
     },
     {
-      "source": "/collabs/:path*",
-      "destination": "https://sponsorly-1.onrender.com/collabs/:path*"
+      "source": "/collabs/(.*)",
+      "destination": "https://sponsorly-1.onrender.com/collabs/$1"
     },
     {
-      "source": "/chats/:path*",
-      "destination": "https://sponsorly-1.onrender.com/chats/:path*"
+      "source": "/chats/(.*)",
+      "destination": "https://sponsorly-1.onrender.com/chats/$1"
     },
     {
-      "source": "/reviews/:path*",
-      "destination": "https://sponsorly-1.onrender.com/reviews/:path*"
+      "source": "/reviews/(.*)",
+      "destination": "https://sponsorly-1.onrender.com/reviews/$1"
     },
     {
-      "source": "/agent/:path*",
-      "destination": "https://sponsorly-1.onrender.com/agent/:path*"
+      "source": "/agent/(.*)",
+      "destination": "https://sponsorly-1.onrender.com/agent/$1"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api|auth|sponsors|creators|collabs|chats|reviews|agent|.*\\.).*)",
       "destination": "/index.html"
     }
   ]
