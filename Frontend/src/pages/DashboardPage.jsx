@@ -29,7 +29,7 @@ const fmtTime = (d) => {
 // ── Status badge ──────────────────────────────────────────────────────────────
 const StatusBadge = ({ status }) => {
   const cfg = {
-    working:   { cls: 'bg-blue-100 text-blue-700', icon: <Hourglass size={11} />, label: 'In Progress' },
+    working:   { cls: 'bg-primary-100 text-primary-700', icon: <Hourglass size={11} />, label: 'In Progress' },
     completed: { cls: 'bg-green-100 text-green-700', icon: <CheckCircle size={11} />, label: 'Completed' },
     cancelled: { cls: 'bg-red-100 text-red-700', icon: <XCircle size={11} />, label: 'Cancelled' },
     pending:   { cls: 'bg-yellow-100 text-yellow-700', icon: <Hourglass size={11} />, label: 'Pending' },
@@ -130,9 +130,9 @@ const ActivityItem = ({ icon: Icon, iconColor, title, subtitle, time, badge }) =
 const ProjectRow = ({ project }) => (
   <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors">
     <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
-      ${project.status === 'working' ? 'bg-blue-100' : project.status === 'completed' ? 'bg-green-100' : 'bg-red-100'}`}>
+      ${project.status === 'working' ? 'bg-primary-100' : project.status === 'completed' ? 'bg-green-50' : 'bg-red-50'}`}>
       <FolderOpen size={16}
-        className={project.status === 'working' ? 'text-blue-500' : project.status === 'completed' ? 'text-green-500' : 'text-red-500'} />
+        className={project.status === 'working' ? 'text-primary-600' : project.status === 'completed' ? 'text-green-500' : 'text-error'} />
     </div>
     <div className="flex-1 min-w-0">
       <p className="text-sm font-semibold text-gray-900 truncate">Project</p>
@@ -294,7 +294,7 @@ const DashboardPage = () => {
       {/* ── Stats row ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={FolderOpen} label="Total Projects" value={stats.totalProjects ?? 0}
-          sub={`${stats.workingProjects ?? 0} active`} gradient="from-blue-500 to-blue-600" pulse={!!stats.workingProjects} />
+          sub={`${stats.workingProjects ?? 0} active`} gradient="from-primary-500 to-primary-600" pulse={!!stats.workingProjects} />
         <StatCard icon={CheckCircle} label="Completed" value={stats.completedProjects ?? 0}
           sub="projects" gradient="from-green-500 to-green-600" />
         <StatCard icon={Bell} label="Pending Requests" value={(stats.pendingReceived ?? 0) + (stats.pendingSent ?? 0)}
@@ -338,7 +338,7 @@ const DashboardPage = () => {
                         : Bell
                     }
                     iconColor={
-                      item.type === 'project' ? 'bg-blue-500'
+                      item.type === 'project' ? 'bg-primary-500'
                         : item.type === 'sent' ? 'bg-primary-500'
                         : 'bg-orange-500'
                     }
@@ -356,7 +356,7 @@ const DashboardPage = () => {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-50">
               <h2 className="font-bold text-gray-900 flex items-center gap-2">
-                <FolderOpen size={17} className="text-blue-500" /> Projects
+                <FolderOpen size={17} className="text-primary-600" /> Projects
               </h2>
               <span className="text-xs text-gray-400">{projects.length} total</span>
             </div>
@@ -392,13 +392,13 @@ const DashboardPage = () => {
               {/* Donut */}
               <div className="flex items-center gap-4 mb-5">
                 <DonutChart segments={[
-                  { value: stats.workingProjects ?? 0, color: '#3b82f6' },
+                  { value: stats.workingProjects ?? 0, color: '#a77f60' },
                   { value: stats.completedProjects ?? 0, color: '#22c55e' },
                   { value: stats.cancelledProjects ?? 0, color: '#ef4444' },
                 ]} size={90} />
                 <div className="space-y-1.5 text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-primary-500 shrink-0" />
                     <span className="text-gray-600">In Progress <span className="font-bold text-gray-900 ml-1">{stats.workingProjects ?? 0}</span></span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -417,9 +417,9 @@ const DashboardPage = () => {
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Collab Requests</p>
                 <BarChart bars={[
                   { value: stats.pendingReceived ?? 0, label: 'Incoming', color: '#f97316' },
-                  { value: stats.pendingSent ?? 0, label: 'Sent', color: '#8b5cf6' },
+                  { value: stats.pendingSent ?? 0, label: 'Sent', color: '#8a5f41' },
                   { value: stats.acceptedSent ?? 0, label: 'Accepted', color: '#22c55e' },
-                  { value: stats.totalChats ?? 0, label: 'Chats', color: '#3b82f6' },
+                  { value: stats.totalChats ?? 0, label: 'Chats', color: '#ccd67f' },
                 ]} />
               </div>
             </div>
