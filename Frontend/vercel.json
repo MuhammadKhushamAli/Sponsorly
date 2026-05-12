@@ -1,41 +1,12 @@
 {
-  "version": 2,
   "rewrites": [
     {
-      "source": "/auth/(.*)",
-      "destination": "https://sponsorly-1.onrender.com/auth/$1"
+      "source": "/api/v1/:path*",
+      "destination": "https://sponsorly-1.onrender.com/api/v1/:path*"
     },
     {
-      "source": "/sponsors/(.*)",
-      "destination": "https://sponsorly-1.onrender.com/sponsors/$1"
-    },
-    {
-      "source": "/creators/(.*)",
-      "destination": "https://sponsorly-1.onrender.com/creators/$1"
-    },
-    {
-      "source": "/creator-campaigns/(.*)",
-      "destination": "https://sponsorly-1.onrender.com/creator-campaigns/$1"
-    },
-    {
-      "source": "/sponsor-campaigns/(.*)",
-      "destination": "https://sponsorly-1.onrender.com/sponsor-campaigns/$1"
-    },
-    {
-      "source": "/collabs/(.*)",
-      "destination": "https://sponsorly-1.onrender.com/collabs/$1"
-    },
-    {
-      "source": "/chats/(.*)",
-      "destination": "https://sponsorly-1.onrender.com/chats/$1"
-    },
-    {
-      "source": "/reviews/(.*)",
-      "destination": "https://sponsorly-1.onrender.com/reviews/$1"
-    },
-    {
-      "source": "/agent/(.*)",
-      "destination": "https://sponsorly-1.onrender.com/agent/$1"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }

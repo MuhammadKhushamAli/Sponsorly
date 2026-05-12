@@ -16,15 +16,15 @@ import reviewRoutes from "./routes/reviews.routes.js";
 import agentRoutes from "./routes/agent.routes.js";
 
 //routes
-app.use("/auth", authRoutes);
-app.use("/sponsors", sponsorshipRoutes);
-app.use("/creators", creatorRoutes);
-app.use("/creator-campaigns", creatorCampaignRoutes);
-app.use("/sponsor-campaigns", sponsorCampaignRoutes);
-app.use("/collabs", collabsRoutes);
-app.use("/chats", chatRoutes);
-app.use("/reviews", reviewRoutes);
-app.use("/agent", agentRoutes);
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/sponsors", sponsorshipRoutes);
+app.use("/api/v1/creators", creatorRoutes);
+app.use("/api/v1/creator-campaigns", creatorCampaignRoutes);
+app.use("/api/v1/sponsor-campaigns", sponsorCampaignRoutes);
+app.use("/api/v1/collabs", collabsRoutes);
+app.use("/api/v1/chats", chatRoutes);
+app.use("/api/v1/reviews", reviewRoutes);
+app.use("/api/v1/agent", agentRoutes);
 
 app.get("/", (req, res) => {
   res.send("Welcome to Sponsorly API");
