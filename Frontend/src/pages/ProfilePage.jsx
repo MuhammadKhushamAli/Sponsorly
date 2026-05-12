@@ -1,17 +1,21 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { Card, Button, Badge, Spinner } from '../components/common/UIComponents';
+import { Card, Button, Badge, FieldError } from '../components/common/UIComponents';
 import { creatorAPI, sponsorAPI } from '../services/api';
 import { Star, BadgeCheck, Edit2, X, Upload, Link2, Plus, Trash2 } from 'lucide-react';
+import { SkeletonProfile, SkeletonBox } from '../components/common/Skeletons';
+import { useToast } from '../context/ToastContext';
+import { validate, creatorProfileSchema, sponsorProfileSchema } from '../utils/validation';
 
 const emptyLink = () => ({ platform: '', url: '' });
 
 const ProfilePage = () => {
   const { user } = useSelector((state) => state.auth);
+  const toast = useToast();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [saveError, setSaveError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const nicheInputRef = useRef(null);
@@ -103,7 +107,7 @@ const ProfilePage = () => {
 
   const handleCancel = () => {
     setEditMode(false);
-    setSaveError('');
+    setFieldErrors({});
     resetFormFromProfile();
   };
 
@@ -150,43 +154,41 @@ const ProfilePage = () => {
   };
 
   const handleSave = async () => {
+    // Client-side validation
+    const schema = isCreator ? creatorProfileSchema : sponsorProfileSchema;
+    const dataToValidate = isCreator
+      ? { bio: formData.bio, niche: formData.niche, followersCount: formData.followersCount }
+      : { bio: formData.bio, industries: formData.industries };
+    const errs = validate(dataToValidate, schema);
+    if (Object.keys(errs).length) {
+      setFieldErrors(errs);
+      toast.warning('Please fix the highlighted fields before saving.');
+      return;
+    }
+    setFieldErrors({});
     try {
       setSaving(true);
-      setSaveError('');
       const api = role === 'creator' ? creatorAPI : sponsorAPI;
-
-      const formDataToSend = new FormData();
-      formDataToSend.append('bio', formData.bio);
-
+      const fd = new FormData();
+      fd.append('bio', formData.bio);
       if (role === 'creator') {
-        formDataToSend.append('niche', JSON.stringify(formData.niche));
-        formDataToSend.append('followersCount', String(formData.followersCount));
+        fd.append('niche', JSON.stringify(formData.niche));
+        fd.append('followersCount', String(formData.followersCount));
         const validLinks = formData.links
-          .map((l) => ({
-            platform: (l.platform || '').trim(),
-            url: (l.url || '').trim(),
-          }))
+          .map((l) => ({ platform: (l.platform || '').trim(), url: (l.url || '').trim() }))
           .filter((l) => l.platform && l.url);
-        if (validLinks.length > 0) {
-          formDataToSend.append('links', JSON.stringify(validLinks));
-        }
+        if (validLinks.length) fd.append('links', JSON.stringify(validLinks));
       } else {
-        formDataToSend.append('industries', JSON.stringify(formData.industries));
+        fd.append('industries', JSON.stringify(formData.industries));
       }
-
-      if (formData.profileImage) {
-        formDataToSend.append('profileImage', formData.profileImage);
-      }
-
-      await api.updateProfile(formDataToSend);
+      if (formData.profileImage) fd.append('profileImage', formData.profileImage);
+      await api.updateProfile(fd);
       setEditMode(false);
       await fetchProfile();
+      toast.success('Profile saved successfully! ✓');
     } catch (err) {
-      console.error('Failed to save profile:', err);
-      const msg =
-        err.response?.data?.message ||
-        'Failed to save profile. Please try again.';
-      setSaveError(msg);
+      const msg = err.response?.data?.message || 'Failed to save profile. Please try again.';
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
@@ -194,8 +196,13 @@ const ProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-12">
-        <Spinner size="lg" />
+      <div className="max-w-3xl mx-auto space-y-6 fade-in">
+        <SkeletonProfile />
+        <div className="space-y-3">
+          <SkeletonBox className="h-5 w-32" />
+          <SkeletonBox className="h-10 w-full" />
+          <SkeletonBox className="h-10 w-full" />
+        </div>
       </div>
     );
   }
@@ -203,10 +210,8 @@ const ProfilePage = () => {
   if (error) {
     return (
       <Card className="border border-gray-200 bg-gray-50 text-gray-900">
-        <p className="font-medium text-error">{error}</p>
-        <Button className="mt-4" onClick={fetchProfile}>
-          Try again
-        </Button>
+        <p className="font-medium text-red-500">{error}</p>
+        <Button className="mt-4" onClick={fetchProfile}>Try again</Button>
       </Card>
     );
   }
@@ -296,9 +301,7 @@ const ProfilePage = () => {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">
-                      Niches
-                    </label>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Niches</label>
                     <div className="flex gap-2 mb-3">
                       <input
                         ref={nicheInputRef}
@@ -311,38 +314,22 @@ const ProfilePage = () => {
                             if (nicheInputRef.current) nicheInputRef.current.value = '';
                           }
                         }}
-                        className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary-500 focus:outline-none"
+                        className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:outline-none"
                       />
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => {
-                          handleAddTag(nicheInputRef.current?.value, true);
-                          if (nicheInputRef.current) nicheInputRef.current.value = '';
-                        }}
-                      >
+                      <Button type="button" variant="secondary" size="sm"
+                        onClick={() => { handleAddTag(nicheInputRef.current?.value, true); if (nicheInputRef.current) nicheInputRef.current.value = ''; }}>
                         Add
                       </Button>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {formData.niche.map((n) => (
-                        <Badge
-                          key={n}
-                          className="inline-flex items-center gap-1.5 pl-3 pr-1 py-1"
-                        >
+                        <Badge key={n} className="inline-flex items-center gap-1.5 pl-3 pr-1 py-1">
                           {n}
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveTag(n, true)}
-                            className="p-0.5 rounded hover:bg-black/10"
-                            aria-label={`Remove ${n}`}
-                          >
-                            ×
-                          </button>
+                          <button type="button" onClick={() => handleRemoveTag(n, true)} className="p-0.5 rounded hover:bg-black/10" aria-label={`Remove ${n}`}>×</button>
                         </Badge>
                       ))}
                     </div>
+                    <FieldError error={fieldErrors.niche} />
                   </div>
 
                   <div>
