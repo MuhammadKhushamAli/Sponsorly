@@ -1,10 +1,118 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Layout/Layout';
 import { creatorAPI } from '../services/api';
-import { Card, Button, Spinner, Badge } from '../components/common/UIComponents';
-import { Star } from 'lucide-react';
+import { Spinner, Badge } from '../components/common/UIComponents';
+import { Star, Users, SlidersHorizontal, X, Search, ChevronDown } from 'lucide-react';
 import { stashCreatorProfile } from '../utils/publicProfileCache';
+
+const fmt = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n.toFixed(1) : '0.0';
+};
+
+const POPULAR_NICHES = ['fashion', 'tech', 'beauty', 'gaming', 'fitness', 'food', 'travel', 'music', 'education', 'finance'];
+
+const StarDisplay = ({ value }) => (
+  <span className="inline-flex gap-0.5">
+    {[1,2,3,4,5].map(n => (
+      <Star key={n} size={11}
+        className={n <= Math.round(Number(value)) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-100'} />
+    ))}
+  </span>
+);
+
+const CreatorCard = ({ creator, onClick }) => {
+  const name = creator?.user?.name || 'Creator';
+  const avatar = creator?.user?.profilePicture_url;
+  const niches = (Array.isArray(creator?.niche) ? creator.niche : []).slice(0, 5);
+  const links = Array.isArray(creator?.links) ? creator.links.slice(0, 3) : [];
+  const initials = name.split(' ').filter(Boolean).slice(0,2).map(p=>p[0]).join('').toUpperCase() || 'C';
+  const followers = creator?.followersCount ?? 0;
+  const rating = fmt(creator?.rating);
+
+  return (
+    <div
+      onClick={() => onClick(creator)}
+      className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1
+        transition-all duration-300 cursor-pointer overflow-hidden flex flex-col"
+    >
+      {/* Gradient header */}
+      <div className="h-20 bg-gradient-to-br from-primary-500 via-secondary-500 to-accent-500 relative shrink-0">
+        {/* Avatar */}
+        <div className="absolute -bottom-8 left-5">
+          {avatar ? (
+            <img src={avatar} alt=""
+              className="w-16 h-16 rounded-2xl object-cover border-4 border-white shadow-md" />
+          ) : (
+            <div className="w-16 h-16 rounded-2xl bg-white border-4 border-white shadow-md flex items-center justify-center
+              text-xl font-black text-primary-600">
+              {initials}
+            </div>
+          )}
+        </div>
+        {/* Rating badge */}
+        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-xl px-2.5 py-1
+          flex items-center gap-1.5 shadow-sm">
+          <Star size={13} className="text-yellow-400 fill-yellow-400" />
+          <span className="text-xs font-bold text-gray-800">{rating}</span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="pt-10 px-5 pb-5 flex flex-col flex-1">
+        <div className="mb-3">
+          <h3 className="font-bold text-gray-900 text-base leading-tight truncate group-hover:text-primary-600 transition-colors">
+            {name}
+          </h3>
+          <div className="flex items-center gap-1 mt-0.5">
+            <StarDisplay value={creator?.rating} />
+            <span className="text-xs text-gray-400 ml-1">{rating}/5</span>
+          </div>
+        </div>
+
+        {/* Bio */}
+        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-3 flex-1">
+          {creator?.user?.bio || creator?.bio || 'No bio provided yet.'}
+        </p>
+
+        {/* Niches */}
+        {niches.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {niches.map(n => (
+              <span key={n} className="text-[10px] font-semibold px-2.5 py-1 rounded-full
+                bg-primary-50 text-primary-700 border border-primary-100">
+                {n}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Social links preview */}
+        {links.length > 0 && (
+          <div className="flex gap-2 mb-3">
+            {links.map((l, i) => (
+              <span key={i} className="text-[10px] px-2 py-1 rounded-full bg-gray-100 text-gray-600 font-medium truncate max-w-[90px]">
+                {l.platform || `Link ${i+1}`}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Footer stats */}
+        <div className="flex items-center justify-between border-t border-gray-50 pt-3 mt-auto">
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <Users size={12} />
+            <span>{followers >= 1000 ? `${(followers/1000).toFixed(1)}k` : followers} followers</span>
+          </div>
+          <span className="text-xs font-semibold text-primary-600 group-hover:underline">
+            View profile →
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const CreatorsPage = () => {
   const [creators, setCreators] = useState([]);
@@ -13,299 +121,266 @@ const CreatorsPage = () => {
   const [selectedTags, setSelectedTags] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [rating, setRating] = useState('');
+  const [minFollowers, setMinFollowers] = useState('');
+  const [sortBy, setSortBy] = useState('rating'); // rating | followers
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
   const firstLoadRef = useRef(true);
 
-  const formatRating = (value) => {
-    if (value === null || value === undefined || value === '') return '0.0';
-    const numeric = Number(value);
-    return Number.isFinite(numeric) ? numeric.toFixed(1) : '0.0';
-  };
-
-  const getCreatorName = (creator) => creator?.user?.name || creator?.name || 'Creator';
-
-  const getCreatorEmail = (creator) => creator?.user?.email || creator?.email || '';
-
-  const getCreatorBio = (creator) => creator?.user?.bio || creator?.bio || 'No bio provided yet.';
-
-  const getCreatorNiches = (creator) => {
-    const value = Array.isArray(creator?.niche) ? creator.niche : [];
-    return value.map((item) => String(item).trim()).filter(Boolean);
-  };
-
-  const extractArray = (res) => {
-    if (!res) return [];
-    const payload = res.data ?? res;
-    if (Array.isArray(payload)) return payload;
-    if (Array.isArray(payload.creators)) return payload.creators;
-    if (Array.isArray(payload.data)) return payload.data;
-    return [];
-  };
-
-  const fetchCreators = async (tags = [], ratingFilter = '') => {
+  const fetchCreators = useCallback(async (tags, ratingFilter, followersFilter) => {
     setLoading(true);
     setError(null);
     try {
       const params = {};
       if (tags.length) params.niche = tags.join(',');
-      if (ratingFilter !== '' && ratingFilter !== null && ratingFilter !== undefined) {
-        params.rating = ratingFilter;
-      }
+      if (ratingFilter !== '') params.rating = ratingFilter;
+      if (followersFilter !== '') params.minFollowers = followersFilter;
       const res = await creatorAPI.getCreators(params);
-      setCreators(extractArray(res));
+      const payload = res?.data;
+      const list = Array.isArray(payload?.creators) ? payload.creators
+        : Array.isArray(payload) ? payload : [];
+      setCreators(list);
     } catch (err) {
-      console.error(err);
       setError('Failed to load creators');
       setCreators([]);
     } finally {
       setLoading(false);
     }
-  };
-
-  const syncFiltersToUrl = (nextTags = selectedTags, nextRating = rating) => {
-    const params = new URLSearchParams();
-    if (nextTags.length) params.set('niche', nextTags.join(','));
-    if (nextRating !== '' && nextRating !== null && nextRating !== undefined) {
-      params.set('rating', nextRating);
-    }
-    const search = params.toString();
-    navigate(
-      { pathname: location.pathname, search: search ? `?${search}` : '' },
-      { replace: true }
-    );
-  };
-
-  const handleResetFilters = () => {
-    setSelectedTags([]);
-    setInputValue('');
-    setRating('');
-    syncFiltersToUrl([], '');
-    fetchCreators([], '');
-  };
-
-  const openCreatorProfile = (creator) => {
-    const id = creator?._id;
-    if (!id) return;
-    stashCreatorProfile(creator);
-    navigate(`/creators/${id}`);
-  };
+  }, []);
 
   useEffect(() => {
     const q = new URLSearchParams(location.search);
-    const niche = q.get('niche');
-    const tags = niche ? niche.split(',').map((t) => t.trim()).filter(Boolean) : [];
-    const urlRating = q.get('rating');
-    setRating(urlRating ?? '');
+    const tags = (q.get('niche') || '').split(',').map(t=>t.trim()).filter(Boolean);
+    const urlRating = q.get('rating') || '';
+    const urlFollowers = q.get('minFollowers') || '';
     setSelectedTags(tags);
-    fetchCreators(tags, urlRating ?? '');
+    setRating(urlRating);
+    setMinFollowers(urlFollowers);
+    fetchCreators(tags, urlRating, urlFollowers);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (firstLoadRef.current) {
-      firstLoadRef.current = false;
-      return;
-    }
-    syncFiltersToUrl(selectedTags, rating);
-    fetchCreators(selectedTags, rating);
+    if (firstLoadRef.current) { firstLoadRef.current = false; return; }
+    const p = new URLSearchParams();
+    if (selectedTags.length) p.set('niche', selectedTags.join(','));
+    if (rating !== '') p.set('rating', rating);
+    if (minFollowers !== '') p.set('minFollowers', minFollowers);
+    navigate({ pathname: location.pathname, search: p.toString() ? `?${p}` : '' }, { replace: true });
+    fetchCreators(selectedTags, rating, minFollowers);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTags]);
+  }, [selectedTags, rating, minFollowers]);
 
-  useEffect(() => {
-    if (firstLoadRef.current) return;
-    syncFiltersToUrl(selectedTags, rating);
-    fetchCreators(selectedTags, rating);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rating]);
+  const addTag = (tag) => {
+    const clean = tag.trim().toLowerCase();
+    if (!clean) return;
+    setSelectedTags(prev => Array.from(new Set([...prev, clean])).slice(0, 10));
+    setInputValue('');
+  };
+
+  const handleInputKey = (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      inputValue.split(',').map(p=>p.trim()).filter(Boolean).forEach(addTag);
+    }
+  };
+
+  const resetAll = () => {
+    setSelectedTags([]); setRating(''); setMinFollowers(''); setInputValue(''); setSearch('');
+    navigate({ pathname: location.pathname, search: '' }, { replace: true });
+    fetchCreators([], '', '');
+  };
+
+  // Client-side: filter by name search + sort
+  const displayed = [...creators]
+    .filter(c => {
+      if (!search) return true;
+      const name = (c?.user?.name || c?.name || '').toLowerCase();
+      const niches = (Array.isArray(c?.niche) ? c.niche : []).join(' ').toLowerCase();
+      return name.includes(search.toLowerCase()) || niches.includes(search.toLowerCase());
+    })
+    .sort((a, b) => {
+      if (sortBy === 'followers') return (b?.followersCount ?? 0) - (a?.followersCount ?? 0);
+      return Number(fmt(b?.rating)) - Number(fmt(a?.rating));
+    });
+
+  const activeFilterCount = selectedTags.length + (rating ? 1 : 0) + (minFollowers ? 1 : 0);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Discover creators</h1>
-              <p className="text-gray-600 mt-2 max-w-2xl">
-                Filter by niche tags and minimum rating. Open a profile for the full picture.
-              </p>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        {/* ── Hero header ── */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-600 via-primary-500 to-secondary-600 p-8 sm:p-12 mb-8 text-white">
+          <div className="relative z-10">
+            <h1 className="text-3xl sm:text-4xl font-black mb-2">Discover Creators</h1>
+            <p className="text-white/75 max-w-lg leading-relaxed">
+              Find talented content creators by niche, rating, and follower count. Start a collaboration today.
+            </p>
+            <div className="mt-6 flex items-center gap-3 bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 max-w-md">
+              <Search size={18} className="text-white/60 shrink-0" />
+              <input
+                id="creators-search-input"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search by name or niche…"
+                className="bg-transparent flex-1 text-white placeholder-white/50 focus:outline-none text-sm"
+              />
+              {search && (
+                <button onClick={() => setSearch('')} className="text-white/60 hover:text-white">
+                  <X size={16} />
+                </button>
+              )}
             </div>
-            <Button variant="outline" onClick={handleResetFilters}>
-              Reset filters
-            </Button>
+          </div>
+          {/* Decorative circles */}
+          <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white/5 -translate-y-1/3 translate-x-1/3" />
+          <div className="absolute bottom-0 right-1/4 w-40 h-40 rounded-full bg-white/5 translate-y-1/2" />
+        </div>
+
+        {/* ── Filter bar ── */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-6 overflow-hidden">
+          {/* Top row */}
+          <div className="flex flex-wrap items-center gap-3 p-4">
+            {/* Popular niches quick-pick */}
+            <div className="flex flex-wrap gap-2 flex-1">
+              {POPULAR_NICHES.map(n => (
+                <button
+                  key={n}
+                  onClick={() => {
+                    if (selectedTags.includes(n)) setSelectedTags(p => p.filter(x => x !== n));
+                    else addTag(n);
+                  }}
+                  className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-colors
+                    ${selectedTags.includes(n)
+                      ? 'bg-primary-600 text-white border-primary-600'
+                      : 'bg-white text-gray-600 border-gray-200 hover:border-primary-400 hover:text-primary-600'}`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+
+            {/* Advanced filter toggle */}
+            <button
+              id="creators-advanced-filter-btn"
+              onClick={() => setFiltersOpen(p => !p)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 font-semibold text-sm transition-colors
+                ${activeFilterCount > 0
+                  ? 'border-primary-500 text-primary-600 bg-primary-50'
+                  : 'border-gray-200 text-gray-600 hover:border-primary-300'}`}
+            >
+              <SlidersHorizontal size={15} />
+              Filters {activeFilterCount > 0 && <span className="bg-primary-600 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center">{activeFilterCount}</span>}
+              <ChevronDown size={14} className={`transition-transform ${filtersOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {activeFilterCount > 0 && (
+              <button onClick={resetAll} className="text-sm text-gray-400 hover:text-error flex items-center gap-1">
+                <X size={14} /> Reset
+              </button>
+            )}
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-6 shadow-sm">
-            <div className="flex flex-col lg:flex-row gap-6">
-              <div className="flex-1">
-                <label className="text-sm font-medium text-gray-700 block mb-2">Niche tags</label>
-                <div className="flex flex-col sm:flex-row gap-2">
+          {/* Advanced filters panel */}
+          {filtersOpen && (
+            <div className="border-t border-gray-100 p-4 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-gray-50">
+              {/* Custom niche input */}
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-2">Custom niche</label>
+                <div className="flex gap-2">
                   <input
-                    aria-label="Add filter tag"
-                    placeholder="e.g. fashion, tech — press Enter"
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ',') {
-                        e.preventDefault();
-                        const parts = inputValue.split(',').map((p) => p.trim()).filter(Boolean);
-                        if (parts.length) {
-                          setSelectedTags((prev) => {
-                            const merged = Array.from(new Set([...prev, ...parts]));
-                            return merged.slice(0, 10);
-                          });
-                          setInputValue('');
-                        }
-                      }
-                    }}
-                    className="flex-1 rounded-xl border-2 border-gray-200 px-4 py-2.5 focus:border-primary-500 focus:outline-none"
+                    onChange={e => setInputValue(e.target.value)}
+                    onKeyDown={handleInputKey}
+                    placeholder="e.g. crypto, vlog…"
+                    className="flex-1 px-3 py-2 text-sm border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:outline-none"
                   />
-                  <Button
-                    onClick={() => {
-                      const parts = inputValue.split(',').map((p) => p.trim()).filter(Boolean);
-                      if (parts.length) {
-                        setSelectedTags((prev) => {
-                          const merged = Array.from(new Set([...prev, ...parts]));
-                          return merged.slice(0, 10);
-                        });
-                        setInputValue('');
-                      }
-                    }}
-                  >
-                    Add
-                  </Button>
+                  <button
+                    onClick={() => inputValue.split(',').map(p=>p.trim()).filter(Boolean).forEach(addTag)}
+                    className="px-3 py-2 bg-primary-600 text-white rounded-xl text-sm font-semibold hover:bg-primary-700"
+                  >Add</button>
                 </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {selectedTags.map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setSelectedTags((prev) => prev.filter((x) => x !== t))}
-                      className="px-3 py-1.5 rounded-full bg-primary-50 text-primary-800 text-sm font-medium border border-primary-100"
-                    >
-                      {t} ×
-                    </button>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {selectedTags.map(t => (
+                    <span key={t} className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      {t}
+                      <button onClick={() => setSelectedTags(p => p.filter(x => x !== t))} className="hover:text-error"><X size={10} /></button>
+                    </span>
                   ))}
                 </div>
               </div>
-              <div className="lg:w-48 shrink-0">
-                <label className="text-sm font-medium text-gray-700 block mb-2">Min rating</label>
-                <select
-                  value={rating}
-                  onChange={(e) => setRating(e.target.value)}
-                  className="w-full rounded-xl border-2 border-gray-200 px-4 py-2.5 bg-white focus:border-primary-500 focus:outline-none"
-                >
+
+              {/* Min rating */}
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-2">Min rating</label>
+                <select value={rating} onChange={e => setRating(e.target.value)}
+                  className="w-full px-3 py-2.5 text-sm border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:outline-none bg-white">
                   <option value="">Any</option>
-                  <option value="0">0+</option>
-                  <option value="1">1+</option>
-                  <option value="2">2+</option>
-                  <option value="3">3+</option>
-                  <option value="4">4+</option>
-                  <option value="5">5</option>
+                  {[1,2,3,4,5].map(n => <option key={n} value={n}>{n}+ ★</option>)}
+                </select>
+              </div>
+
+              {/* Min followers */}
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide block mb-2">Min followers</label>
+                <select value={minFollowers} onChange={e => setMinFollowers(e.target.value)}
+                  className="w-full px-3 py-2.5 text-sm border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:outline-none bg-white">
+                  <option value="">Any</option>
+                  <option value="100">100+</option>
+                  <option value="1000">1,000+</option>
+                  <option value="10000">10,000+</option>
+                  <option value="100000">100k+</option>
+                  <option value="1000000">1M+</option>
                 </select>
               </div>
             </div>
+          )}
+        </div>
+
+        {/* ── Results header ── */}
+        <div className="flex items-center justify-between mb-5">
+          <p className="text-sm text-gray-500">
+            {loading ? 'Loading…' : <><span className="font-bold text-gray-900">{displayed.length}</span> creator{displayed.length !== 1 ? 's' : ''} found</>}
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500">Sort:</span>
+            {['rating', 'followers'].map(s => (
+              <button key={s} onClick={() => setSortBy(s)}
+                className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors
+                  ${sortBy === s ? 'bg-primary-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-primary-300'}`}>
+                {s === 'rating' ? '⭐ Rating' : '👥 Followers'}
+              </button>
+            ))}
           </div>
         </div>
 
-        {loading && (
-          <div className="flex items-center justify-center py-24">
-            <Spinner />
+        {/* ── Grid ── */}
+        {loading ? (
+          <div className="flex justify-center py-24"><Spinner size="lg" /></div>
+        ) : error ? (
+          <p className="text-error text-center py-8">{error}</p>
+        ) : displayed.length === 0 ? (
+          <div className="text-center py-16 rounded-2xl border border-dashed border-gray-200 bg-white">
+            <div className="text-5xl mb-3">🔍</div>
+            <p className="font-semibold text-gray-700">No creators found</p>
+            <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
+            <button onClick={resetAll} className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-xl text-sm font-semibold">
+              Clear all filters
+            </button>
           </div>
-        )}
-
-        {error && !loading && <p className="text-error mb-6">{error}</p>}
-
-        {!loading && !error && (
-          <div>
-            <p className="text-sm text-gray-500 mb-6">
-              Showing <span className="font-semibold text-gray-900">{creators.length}</span> creator
-              {creators.length === 1 ? '' : 's'}
-            </p>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              {creators.length === 0 && (
-                <div className="col-span-full rounded-2xl border border-dashed border-gray-200 bg-white p-12 text-center text-gray-500">
-                  No creators found for the current filters.
-                </div>
-              )}
-
-              {creators.map((creator, index) => {
-                const name = getCreatorName(creator);
-                const email = getCreatorEmail(creator);
-                const niches = getCreatorNiches(creator).slice(0, 8);
-                const avatar = creator?.user?.profilePicture_url;
-
-                return (
-                  <Card
-                    key={creator._id || creator.id || `${name}-${index}`}
-                    className="!p-0 overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex flex-col sm:flex-row">
-                      <div className="sm:w-36 bg-gradient-to-br from-primary-100 to-accent-100 flex items-center justify-center p-8 sm:p-6">
-                        {avatar ? (
-                          <img
-                            src={avatar}
-                            alt=""
-                            className="w-20 h-20 rounded-2xl object-cover ring-4 ring-white shadow"
-                          />
-                        ) : (
-                          <div className="w-20 h-20 rounded-2xl bg-white flex items-center justify-center text-xl font-bold text-primary-600 shadow ring-4 ring-white">
-                            {name
-                              .split(' ')
-                              .filter(Boolean)
-                              .slice(0, 2)
-                              .map((p) => p[0])
-                              .join('')
-                              .toUpperCase() || 'C'}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 p-6 flex flex-col min-w-0">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div className="min-w-0">
-                            <h3 className="text-lg font-bold text-gray-900 truncate">{name}</h3>
-                            {email ? (
-                              <p className="text-sm text-gray-500 truncate">{email}</p>
-                            ) : null}
-                          </div>
-                          <Badge variant="secondary" className="shrink-0 inline-flex items-center gap-1">
-                            <Star size={14} className="text-yellow-500 fill-yellow-500" />
-                            {formatRating(creator.rating)}
-                          </Badge>
-                        </div>
-                        <p className="mt-3 text-sm text-gray-600 line-clamp-3 leading-relaxed">
-                          {getCreatorBio(creator)}
-                        </p>
-                        <div className="mt-4 flex flex-wrap gap-2 items-center">
-                          {niches.length ? (
-                            niches.map((tag) => (
-                              <span
-                                key={tag}
-                                className="text-xs font-medium px-2.5 py-1 rounded-full bg-primary-50 text-primary-800"
-                              >
-                                {tag}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="text-xs text-gray-500">No niches listed</span>
-                          )}
-                          <span className="text-xs text-gray-500 ml-auto sm:ml-0">
-                            {creator.followersCount ?? 0} followers
-                          </span>
-                        </div>
-                        <div className="mt-5 pt-4 border-t border-gray-100 flex justify-end">
-                          <Button size="sm" onClick={() => openCreatorProfile(creator)}>
-                            View details
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {displayed.map((creator, i) => (
+              <CreatorCard
+                key={creator._id || i}
+                creator={creator}
+                onClick={c => { stashCreatorProfile(c); navigate(`/creators/${c._id}`); }}
+              />
+            ))}
           </div>
         )}
       </main>
