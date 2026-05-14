@@ -83,7 +83,6 @@ The three services communicate over HTTP:
 | OpenAI Agents SDK | LLM Agent Orchestration |
 | OpenAI GPT-3.5 Turbo | Language Model |
 | Pydantic | Request Validation |
-| ChromaDB | Vector Database for campaign data |
 
 ---
 
@@ -159,7 +158,7 @@ AI/
 ├── agent/
 │   ├── agent.py            # Agent definition & caller
 │   └── agent_tools.py      # Tool functions (campaign finders)
-├── db/                     # ChromaDB vector store integration
+├── db/                     # Mongo DB integration
 ├── user_data/              # User context models
 └── requirements.txt        # Python dependencies
 ```
@@ -194,7 +193,7 @@ The AI microservice is a **FastAPI** server that hosts an **OpenAI Agents SDK** 
 - **Sponsors** → agent calls `creators_compaigns_finder` to surface relevant creator campaigns.
 - **Creators** → agent calls `sponsors_compaigns_finder` to surface relevant sponsor campaigns.
 - Uses **conversation history chaining** via `previous_response_id` for multi-turn dialogue.
-- Queries a **ChromaDB** vector database populated with campaign data for semantic search.
+- Queries a **MongoDB** no relational database populated with campaign data for semantic search.
 
 ---
 
